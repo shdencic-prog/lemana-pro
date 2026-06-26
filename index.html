@@ -7,7 +7,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
-        /* ... все стили без изменений ... */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
         body { background: #fef7e8; color: #1e1e1e; padding: 20px 24px; }
         .app-container { max-width: 1900px; margin: 0 auto; position: relative; }
@@ -252,7 +251,6 @@
         .legend-item { display: inline-flex; align-items: center; gap: 4px; }
         .legend-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #ddd; }
         
-        /* Индикатор загрузки при фильтрации */
         .filter-loading {
             display: none;
             background: #fff3e0;
@@ -415,7 +413,6 @@
                 </div>
             </div>
             
-            <!-- Индикатор загрузки при фильтрации -->
             <div id="filterLoading" class="filter-loading">
                 <span class="spinner-small"></span> Применяем фильтры...
             </div>
@@ -980,7 +977,17 @@
         const bestGamma = (sumBestSeller + sumMertviyStok >= 1) ? 1 : "";
         const bestNext = bestsMap.has(mapKey) ? 1 : "";
         const gammaValue = gammaItem["Гамма"] || "";
+        
+        // Исправленное определение ТОП (убираем .00, пустые значения → "")
         let topValue = getFieldValue(gammaItem, ["Топ в магазине", "ТОП", "Top", "топ"]);
+        if (topValue !== undefined && topValue !== null && topValue !== "") {
+            const topStr = String(topValue).trim();
+            if (topStr.match(/^\d+\.00$/)) {
+                topValue = topStr.replace(/\.00$/, '');
+            }
+        } else {
+            topValue = "";
+        }
         
         const minDn = getMaxReserveByKeyword(store, artikul);
         const maxItem = maxMap.get(mapKey);
@@ -1087,7 +1094,7 @@
         };
     }
 
-    // ==================== ФИЛЬТРАЦИЯ ====================
+    // ==================== ФИЛЬТРАЦИЯ (оптимизированная) ====================
     function applyAllFilters() {
         if (!calculatedResult.length || isFiltering) {
             filteredCalculatedResult = [];
@@ -1095,12 +1102,10 @@
             return;
         }
         
-        // Показываем индикатор загрузки
         const filterLoading = document.getElementById('filterLoading');
         if (filterLoading) filterLoading.classList.add('active');
         isFiltering = true;
         
-        // Используем setTimeout для разгрузки основного потока
         setTimeout(() => {
             try {
                 const storeFilter = document.getElementById('storeFilter').value;
@@ -1111,13 +1116,16 @@
                 
                 // Базовые фильтры
                 if (storeFilter !== 'all') {
-                    result = result.filter(row => String(row["№ магазина"] || "") === storeFilter);
+                    const store = storeFilter;
+                    result = result.filter(row => String(row["№ магазина"] || "") === store);
                 }
                 if (deptFilter !== 'all') {
-                    result = result.filter(row => String(row["Отдел"] || "") === deptFilter);
+                    const dept = deptFilter;
+                    result = result.filter(row => String(row["Отдел"] || "") === dept);
                 }
                 if (subdeptFilter !== 'all') {
-                    result = result.filter(row => String(row["Подотдел"] || "") === subdeptFilter);
+                    const subdept = subdeptFilter;
+                    result = result.filter(row => String(row["Подотдел"] || "") === subdept);
                 }
                 
                 // Расширенные фильтры (только онлайн)
@@ -1130,34 +1138,53 @@
                     const transitMin = parseInt(document.getElementById('transitMinInput').value) || 0;
                     const transitMax = parseInt(document.getElementById('transitMaxInput').value) || 999;
                     
+                    // === ОПТИМИЗИРОВАННЫЙ ФИЛЬТР ПО ТОП ===
                     if (topFilter !== 'all') {
-                        // Преобразуем ТОП к числу для сравнения (убираем .00)
-                        result = result.filter(row => {
-                            const topVal = String(row["ТОП"] || "").replace(/\.00$/, '');
-                            return topVal === topFilter;
-                        });
+                        if (topFilter === '0') {
+                            // ТОП=0: пустые значения + "0"
+                            result = result.filter(row => {
+                                const topVal = row["ТОП"];
+                                return topVal === undefined || 
+                                       topVal === null || 
+                                       topVal === "" || 
+                                       String(topVal).trim() === "" || 
+                                       String(topVal).replace(/\.00$/, '') === "0";
+                            });
+                        } else {
+                            // ТОП=1 или 2: точное совпадение
+                            result = result.filter(row => {
+                                const topVal = String(row["ТОП"] || "").replace(/\.00$/, '');
+                                return topVal === topFilter;
+                            });
+                        }
                     }
+                    
                     if (gammaFilter !== 'all') {
-                        result = result.filter(row => String(row["Гамма"] || "") === gammaFilter);
+                        const gamma = gammaFilter;
+                        result = result.filter(row => String(row["Гамма"] || "") === gamma);
                     }
                     
                     if (stockMin <= stockMax) {
+                        const min = stockMin;
+                        const max = stockMax;
                         result = result.filter(row => {
                             const days = toNumber(row["Запас, дн."], 999);
-                            return days >= stockMin && days <= stockMax;
+                            return days >= min && days <= max;
                         });
                     }
                     if (transitMin <= transitMax) {
+                        const min = transitMin;
+                        const max = transitMax;
                         result = result.filter(row => {
                             const days = toNumber(row["В пути, дн."], 0);
-                            return days >= transitMin && days <= transitMax;
+                            return days >= min && days <= max;
                         });
                     }
                 }
                 
-                // Фильтр по артикулам
                 if (articleFilterList && articleFilterList.size > 0) {
-                    result = result.filter(row => articleFilterList.has(String(row["Артикул"] || "").trim()));
+                    const filterSet = articleFilterList;
+                    result = result.filter(row => filterSet.has(String(row["Артикул"] || "").trim()));
                 }
                 
                 filteredCalculatedResult = result;
@@ -1174,7 +1201,7 @@
         }, 10);
     }
 
-    // ==================== ОТРИСОВКА ТАБЛИЦЫ (оптимизированная) ====================
+    // ==================== ОТРИСОВКА ТАБЛИЦЫ ====================
     function renderFullTableWithFilter() {
         let dataToShow = filteredCalculatedResult.length ? filteredCalculatedResult : calculatedResult;
         
@@ -1213,7 +1240,6 @@
             return;
         }
         
-        // Используем DocumentFragment для оптимизации
         const fragment = document.createDocumentFragment();
         
         for (const row of dataToShow) {
@@ -1301,7 +1327,6 @@
             fragment.appendChild(tr);
         }
         
-        // Очищаем и добавляем фрагмент
         tbody.innerHTML = '';
         tbody.appendChild(fragment);
         
@@ -1764,12 +1789,10 @@
         if (e.key === 'Enter') applyArticleFilter();
     });
     
-    // Базовые фильтры (пересчитывают всё)
     document.getElementById("storeFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     document.getElementById("departmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     document.getElementById("subdepartmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     
-    // Расширенные фильтры (только фильтрация)
     document.getElementById("topFilter")?.addEventListener("change", function() { applyAllFilters(); });
     document.getElementById("gammaFilter")?.addEventListener("change", function() { applyAllFilters(); });
     
