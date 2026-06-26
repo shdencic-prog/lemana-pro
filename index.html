@@ -9,90 +9,276 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
         body { background: #fef7e8; color: #1e1e1e; padding: 20px 24px; }
-        .app-container { max-width: 1800px; margin: 0 auto; position: relative; }
-        .header { background: linear-gradient(135deg, #FF8C00 0%, #FFB347 100%); border-bottom: 6px solid #000000; border-radius: 20px 20px 0 0; padding: 18px 28px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .header h1 { font-size: 1.9rem; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .header h1 small { font-size: 0.85rem; background: rgba(0,0,0,0.1); padding: 4px 14px; border-radius: 40px; }
-        .global-expand-btn { background: #3a3a3a; color: white; border: none; border-radius: 40px; padding: 6px 16px; font-weight: bold; cursor: pointer; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: 0.2s; }
-        .global-expand-btn:hover { background: #FF8C00; color: #1e1e1e; transform: scale(1.02); }
-        .dashboard-flex { display: flex; gap: 24px; transition: all 0.3s ease; }
-        .left-panel { width: 360px; flex-shrink: 0; background: #ffffff; border-radius: 12px; border: 1px solid #ffdd99; padding: 20px; transition: all 0.3s; overflow-x: hidden; }
+        .app-container { max-width: 1900px; margin: 0 auto; position: relative; }
+        
+        .header { background: linear-gradient(135deg, #FF8C00 0%, #FFB347 100%); border-bottom: 6px solid #000000; border-radius: 20px 20px 0 0; padding: 12px 28px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .header h1 small { font-size: 0.75rem; background: rgba(0,0,0,0.1); padding: 4px 14px; border-radius: 40px; }
+        .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        
+        .mode-toggle-btn { padding: 6px 16px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+        .mode-toggle-btn.basic { background: #e0e0e0; color: #555; }
+        .mode-toggle-btn.basic:hover { background: #d0d0d0; }
+        .mode-toggle-btn.online { background: #2c5f2d; color: white; box-shadow: 0 0 15px rgba(44, 95, 45, 0.2); }
+        .mode-toggle-btn.online:hover { background: #1f4520; transform: scale(1.02); }
+        .mode-toggle-btn.active { box-shadow: 0 0 0 2px #000; }
+        
+        .mode-indicator { font-size: 0.7rem; padding: 4px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; transition: 0.3s; }
+        .mode-indicator.basic-mode { background: #e0e0e0; color: #555; }
+        .mode-indicator.online-mode { background: #2c5f2d; color: white; }
+        .mode-indicator .indicator-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #999; }
+        .mode-indicator.online-mode .indicator-dot { background: #4caf50; }
+        
+        .global-expand-btn { background: #3a3a3a; color: white; border: none; border-radius: 40px; padding: 5px 14px; font-weight: bold; cursor: pointer; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; transition: 0.2s; }
+        .global-expand-btn:hover { background: #FF8C00; color: #1e1e1e; }
+        
+        .dashboard-flex { display: flex; gap: 20px; transition: all 0.3s ease; }
+        .left-panel { width: 340px; flex-shrink: 0; background: #ffffff; border-radius: 12px; border: 1px solid #ffdd99; padding: 16px; transition: all 0.3s; overflow-x: hidden; }
         .left-panel.collapsed { width: 0; padding: 0; margin: 0; opacity: 0; visibility: hidden; transform: translateX(-30px); }
-        .right-panel { flex: 1; background: #ffffff; border-radius: 16px; border: 1px solid #ffdd99; padding: 20px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-        .panel-controls { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-        .collapse-panel-btn { background: #FF8C00; border: none; border-radius: 40px; padding: 6px 14px; font-weight: bold; cursor: pointer; font-size: 0.75rem; color: #1e1e1e; }
-        .main-upload-btn, .btn-load-excel, .btn-excel-export, .secondary-btn, .btn-compute, .btn-auto-load { background: #FF8C00; color: #1e1e1e; transition: 0.2s; border: none; cursor: pointer; font-weight: bold; border-radius: 40px; }
-        .main-upload-btn:hover, .btn-load-excel:hover, .btn-excel-export:hover, .secondary-btn:hover, .btn-compute:hover, .btn-auto-load:hover { background: #e07c00; transform: scale(0.98); }
-        .btn-excel-export, .btn-compute { padding: 8px 20px; font-size: 0.85rem; }
-        .btn-auto-load { padding: 8px 16px; font-size: 0.8rem; background: #2c5f2d; color: white; width: 100%; margin-bottom: 12px; }
+        .right-panel { flex: 1; background: #ffffff; border-radius: 16px; border: 1px solid #ffdd99; padding: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+        
+        .panel-controls { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+        .collapse-panel-btn { background: #FF8C00; border: none; border-radius: 40px; padding: 4px 12px; font-weight: bold; cursor: pointer; font-size: 0.7rem; color: #1e1e1e; }
+        
+        .btn-auto-load { padding: 8px 16px; font-size: 0.75rem; background: #2c5f2d; color: white; width: 100%; margin-bottom: 10px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-auto-load:hover { background: #1f4520; }
+        
+        .main-upload-btn, .btn-load-excel, .btn-excel-export, .secondary-btn, .btn-compute { background: #FF8C00; color: #1e1e1e; transition: 0.2s; border: none; cursor: pointer; font-weight: bold; border-radius: 40px; }
+        .main-upload-btn:hover, .btn-load-excel:hover, .btn-excel-export:hover, .secondary-btn:hover, .btn-compute:hover { background: #e07c00; }
+        .btn-excel-export, .btn-compute { padding: 6px 16px; font-size: 0.75rem; }
         .btn-compute { background: #2c5f2d; color: white; }
         .btn-compute:hover { background: #1f4520; }
-        .main-upload-btn { width: 100%; padding: 12px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
-        .btn-load-excel { padding: 6px 14px; font-size: 0.75rem; }
-        .secondary-btn { background: #b0a790; color: #2c2c2c; padding: 6px 12px; font-size: 0.75rem; width: 100%; text-align: center; margin-top: 8px; }
+        .main-upload-btn { width: 100%; padding: 10px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+        .btn-load-excel { padding: 4px 12px; font-size: 0.65rem; }
+        .secondary-btn { background: #b0a790; color: #2c2c2c; padding: 4px 10px; font-size: 0.65rem; width: 100%; text-align: center; margin-top: 6px; }
         .secondary-btn:hover { background: #9a8e7a; }
-        .reports-cascade-list { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; background: #FFF7E6; border-radius: 16px; margin-top: 12px; }
-        .reports-cascade-list.open { max-height: 760px; padding: 14px; border: 1px solid #FFCF8A; }
-        .cascade-report-item { background: white; margin: 8px 0; border-radius: 40px; border-left: 4px solid #FF8C00; }
-        .cascade-header { display: flex; justify-content: space-between; padding: 10px 16px; cursor: pointer; font-weight: 600; align-items: center; font-size: 0.85rem; }
-        .cascade-header:hover { background: #fff0db; transform: translateX(6px); }
-        .cascade-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #fefaf2; border-radius: 0 0 20px 20px; }
-        .cascade-report-item.active-cascade .cascade-content { max-height: 100px; padding: 10px 14px; border-top: 1px solid #ffe0b5; }
-        .upload-status { display: inline-flex; align-items: center; margin-left: 8px; font-size: 14px; }
-        .links-cascade { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; background: #FFF7E6; border-radius: 16px; margin-top: 12px; }
-        .links-cascade.open { max-height: 600px; padding: 14px; border: 1px solid #FFCF8A; }
-        .report-link-item { display: block; padding: 8px 12px; margin: 6px 0; background: white; border-radius: 40px; text-decoration: none; color: #1e1e1e; font-size: 0.75rem; font-weight: 500; border-left: 4px solid #FF8C00; transition: 0.2s; }
-        .report-link-item:hover { background: #FFE1B3; transform: translateX(5px); }
-        .filters-area { background: #FFF3E0; border-radius: 16px; padding: 16px; margin: 20px 0; }
-        .filter-group { margin-bottom: 18px; }
-        .filter-group label { font-weight: 700; display: block; margin-bottom: 8px; color: #4a2e00; font-size: 0.85rem; }
-        select, input { width: 100%; padding: 8px 12px; border-radius: 30px; border: 1px solid #FFCF8A; background: white; cursor: pointer; }
-        input { cursor: text; }
-        .pivot-wrapper { overflow-x: auto; border-radius: 16px; border: 1px solid #FFDCA8; background: #FFFFF5; max-height: 560px; overflow-y: auto; }
-        .full-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; min-width: 2200px; background-color: #ffffff; }
-        .full-table th, .full-table td { border: 1px solid #d9c2a7; padding: 8px 6px; text-align: left; vertical-align: top; }
-        .full-table th { background: #FFB347; color: #1e1e1e; position: sticky; top: 0; font-weight: 700; border-bottom: 2px solid #b97f10; }
+        
+        .reports-cascade-list { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; background: #FFF7E6; border-radius: 12px; margin-top: 8px; }
+        .reports-cascade-list.open { max-height: 600px; padding: 10px; border: 1px solid #FFCF8A; }
+        .cascade-report-item { background: white; margin: 4px 0; border-radius: 30px; border-left: 4px solid #FF8C00; }
+        .cascade-header { display: flex; justify-content: space-between; padding: 6px 12px; cursor: pointer; font-weight: 600; align-items: center; font-size: 0.75rem; }
+        .cascade-header:hover { background: #fff0db; }
+        .cascade-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #fefaf2; border-radius: 0 0 16px 16px; }
+        .cascade-report-item.active-cascade .cascade-content { max-height: 80px; padding: 6px 10px; border-top: 1px solid #ffe0b5; }
+        .upload-status { display: inline-flex; align-items: center; margin-left: 6px; font-size: 12px; }
+        .links-cascade { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; background: #FFF7E6; border-radius: 12px; margin-top: 8px; }
+        .links-cascade.open { max-height: 500px; padding: 10px; border: 1px solid #FFCF8A; }
+        .report-link-item { display: block; padding: 4px 10px; margin: 4px 0; background: white; border-radius: 30px; text-decoration: none; color: #1e1e1e; font-size: 0.65rem; font-weight: 500; border-left: 4px solid #FF8C00; transition: 0.2s; }
+        .report-link-item:hover { background: #FFE1B3; }
+        
+        /* ===== ОБЛАСТЬ ФИЛЬТРОВ (БАЗОВАЯ) ===== */
+        .filters-area { 
+            background: #FFF3E0; 
+            border-radius: 12px; 
+            padding: 14px 16px; 
+            margin: 10px 0; 
+            transition: all 0.3s; 
+            border: 1px solid #ffdd99;
+            max-height: 400px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            resize: vertical;
+            min-height: 140px;
+            position: relative;
+        }
+        
+        .filters-area::-webkit-scrollbar { width: 5px; }
+        .filters-area::-webkit-scrollbar-thumb { background: #FF8C00; border-radius: 4px; }
+        .filters-area::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 4px; }
+        
+        .filters-area::after {
+            content: "↕";
+            position: absolute;
+            bottom: 2px;
+            right: 8px;
+            font-size: 12px;
+            color: #ccc;
+            pointer-events: none;
+        }
+        
+        .filter-group { margin-bottom: 10px; }
+        .filter-group label { font-weight: 700; display: block; margin-bottom: 4px; color: #4a2e00; font-size: 0.75rem; }
+        .filter-group select { 
+            width: 100%; padding: 8px 12px; border-radius: 30px; border: 1px solid #FFCF8A; background: white; cursor: pointer; font-size: 0.75rem; transition: 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF8C00' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+        .filter-group select:hover { border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.1); }
+        .filter-group select:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.2); }
+        .filter-group select option { padding: 4px 8px; }
+        
+        /* ===== РАСШИРЕННЫЕ ФИЛЬТРЫ (ТОЛЬКО В ОНЛАЙН-РЕЖИМЕ) ===== */
+        .advanced-filters {
+            display: none;
+            padding-top: 10px;
+            border-top: 2px dashed #FFCF8A;
+            margin-top: 6px;
+        }
+        .advanced-filters.show { display: block; }
+        
+        .filter-row-2col { display: flex; gap: 10px; }
+        .filter-row-2col .filter-group { flex: 1; margin-bottom: 8px; }
+        .filter-row-2col .filter-group label { font-size: 0.7rem; }
+        .filter-row-2col .filter-group select { padding: 6px 10px; font-size: 0.7rem; }
+        
+        /* Компактные ползунки */
+        .range-group { margin-bottom: 8px; }
+        .range-group label { font-weight: 700; display: block; margin-bottom: 3px; color: #4a2e00; font-size: 0.7rem; }
+        .range-row { display: flex; align-items: center; gap: 6px; }
+        .range-row input[type="range"] { 
+            flex: 1; 
+            height: 3px; 
+            -webkit-appearance: none; 
+            background: #FFCF8A; 
+            border-radius: 2px; 
+            outline: none; 
+            margin: 0;
+        }
+        .range-row input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            background: #FF8C00; 
+            cursor: pointer; 
+        }
+        .range-row input[type="range"]::-moz-range-thumb { 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            background: #FF8C00; 
+            cursor: pointer; 
+            border: none; 
+        }
+        .range-value { 
+            min-width: 30px; 
+            text-align: center; 
+            font-size: 0.6rem; 
+            font-weight: 700; 
+            color: #4a2e00; 
+            background: white; 
+            padding: 1px 5px; 
+            border-radius: 10px; 
+            border: 1px solid #FFCF8A; 
+        }
+        .range-label-min, .range-label-max { font-size: 0.5rem; color: #999; }
+        
+        /* ===== ОНЛАЙН-ПАНЕЛЬ ===== */
+        .online-panel { 
+            background: #e8f5e9; 
+            border-radius: 10px; 
+            padding: 8px 12px; 
+            margin-top: 6px; 
+            border: 2px solid #2c5f2d; 
+            display: none;
+            resize: vertical;
+            overflow-y: auto;
+            min-height: 80px;
+            max-height: 400px;
+            position: relative;
+            transition: 0.3s;
+        }
+        .online-panel::-webkit-scrollbar { width: 5px; }
+        .online-panel::-webkit-scrollbar-thumb { background: #2c5f2d; border-radius: 4px; }
+        .online-panel::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 4px; }
+        .online-panel::after {
+            content: "↕";
+            position: absolute;
+            bottom: 2px;
+            right: 8px;
+            font-size: 12px;
+            color: #2c5f2d;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .online-panel label { font-weight: 700; font-size: 0.65rem; color: #1e1e1e; }
+        .online-panel .info-note { color: #1a5e1a; font-size: 0.55rem; }
+        
+        .column-toggle-group { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; max-height: 80px; overflow-y: auto; }
+        .column-toggle-item { display: flex; align-items: center; gap: 3px; font-size: 0.5rem; background: white; padding: 1px 6px; border-radius: 10px; border: 1px solid #ccc; }
+        .column-toggle-item input[type="checkbox"] { width: 10px; height: 10px; cursor: pointer; }
+        .export-changes-btn { background: #1a5e1a; color: white; border: none; border-radius: 30px; padding: 4px 14px; font-size: 0.6rem; cursor: pointer; font-weight: bold; margin-top: 6px; }
+        .export-changes-btn:hover { background: #0f4a0f; }
+        
+        /* ===== ТАБЛИЦА ===== */
+        .pivot-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #FFDCA8; background: #FFFFF5; max-height: 560px; overflow-y: auto; }
+        .full-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; min-width: 2200px; background-color: #ffffff; }
+        .full-table th, .full-table td { border: 1px solid #d9c2a7; padding: 5px 4px; text-align: left; vertical-align: top; }
+        .full-table th { background: #FFB347; color: #1e1e1e; position: sticky; top: 0; font-weight: 700; border-bottom: 2px solid #b97f10; font-size: 0.6rem; white-space: nowrap; }
         .full-table tbody tr:nth-child(even) td { background-color: #fef8ef; }
         .full-table tbody tr:hover td { background-color: #ffefdb; }
+        .full-table td.editable { background-color: #fffde7 !important; }
+        .full-table td.editable:hover { background-color: #fff9c4 !important; }
+        .full-table td select { width: 100%; padding: 1px 4px; border: 1px solid #FFCF8A; border-radius: 4px; font-size: 0.6rem; background: white; }
+        .full-table td input[type="number"] { width: 100%; padding: 1px 4px; border: 1px solid #FFCF8A; border-radius: 4px; font-size: 0.6rem; }
         
-        footer { margin-top: 30px; text-align: center; font-size: 0.7rem; border-top: 2px solid #FFE0B5; padding-top: 16px; }
-        .info-note { font-size: 0.65rem; color: #a67c2e; margin-top: 6px; }
-        .right-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-        .upload-summary { font-size: 11px; background: #f0f7f0; padding: 4px 10px; border-radius: 20px; display: inline-block; }
-        .action-buttons { display: flex; gap: 10px; align-items: center; }
-        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #FF8C00; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
+        /* Цветовая подсветка Запас, дн. и В пути, дн. */
+        .full-table td.stock-critical { background-color: #ffcdd2 !important; color: #b71c1c; font-weight: 700; }
+        .full-table td.stock-warning { background-color: #ffccbc !important; color: #bf360c; font-weight: 600; }
+        .full-table td.stock-attention { background-color: #fff9c4 !important; color: #f57f17; }
+        .full-table td.stock-normal { background-color: #c8e6c9 !important; color: #1b5e20; }
+        
+        /* Подсветка наибольшего минимума */
+        .full-table td.max-min-highlight {
+            background-color: #fff3e0 !important;
+            font-weight: 700;
+            color: #e65100;
+            border-left: 3px solid #FF8C00;
+        }
+        .full-table td.max-min-highlight:hover { background-color: #ffe0b2 !important; }
+        
+        footer { margin-top: 20px; text-align: center; font-size: 0.6rem; border-top: 2px solid #FFE0B5; padding-top: 12px; }
+        .info-note { font-size: 0.55rem; color: #a67c2e; margin-top: 4px; }
+        .right-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .right-header h3 { font-size: 1rem; color: #B45F06; }
+        .action-buttons { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        
+        .upload-summary { font-size: 10px; background: #f0f7f0; padding: 3px 10px; border-radius: 20px; display: inline-block; }
+        .stats-badge { background: #e8f5e9; padding: 6px 10px; border-radius: 16px; font-size: 10px; margin-bottom: 6px; text-align: center; }
+        .hidden-counter { background: #fff3e0; padding: 6px 10px; border-radius: 16px; font-size: 10px; text-align: center; margin-top: 6px; color: #b45f06; }
+        
+        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #f3f3f3; border-top: 2px solid #FF8C00; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .progress-bar { height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-top: 10px; }
+        .progress-bar { height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-top: 6px; }
         .progress-fill { height: 100%; background: #FF8C00; width: 0%; transition: width 0.3s; }
-        .stats-badge { background: #e8f5e9; padding: 8px 12px; border-radius: 20px; font-size: 11px; margin-bottom: 10px; text-align: center; }
-        .hidden-counter { background: #fff3e0; padding: 8px 12px; border-radius: 20px; font-size: 11px; text-align: center; margin-top: 8px; color: #b45f06; }
-        .auto-load-progress { background: #e8f5e9; padding: 8px 12px; border-radius: 16px; margin-bottom: 12px; font-size: 11px; display: none; }
-        .folder-path { font-size: 10px; color: #666; margin-top: 5px; word-break: break-all; }
-        .auto-load-result-container { margin-top: 8px; border: 1px solid #FFCF8A; border-radius: 12px; overflow: hidden; }
-        .auto-load-result-header { background: #FFF3E0; padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: bold; }
+        .auto-load-progress { background: #e8f5e9; padding: 6px 10px; border-radius: 12px; margin-bottom: 8px; font-size: 10px; display: none; }
+        .folder-path { font-size: 9px; color: #666; margin-top: 4px; word-break: break-all; }
+        .auto-load-result-container { margin-top: 6px; border: 1px solid #FFCF8A; border-radius: 10px; overflow: hidden; }
+        .auto-load-result-header { background: #FFF3E0; padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: bold; }
         .auto-load-result-header:hover { background: #FFE1B3; }
-        .auto-load-result { max-height: 300px; overflow-y: auto; font-size: 10px; padding: 8px; background: #f5f5f5; transition: max-height 0.3s ease; }
+        .auto-load-result { max-height: 200px; overflow-y: auto; font-size: 9px; padding: 6px; background: #f5f5f5; transition: max-height 0.3s ease; }
         .auto-load-result.collapsed { max-height: 0; padding: 0; overflow: hidden; }
-        .toggle-icon { font-size: 12px; transition: transform 0.2s; }
+        .toggle-icon { font-size: 10px; transition: transform 0.2s; }
         .toggle-icon.rotated { transform: rotate(180deg); }
         
-        .search-area { background: #FFF3E0; border-radius: 16px; padding: 16px; margin-top: 20px; }
-        .search-group { margin-bottom: 15px; }
-        .search-group label { font-weight: 700; display: block; margin-bottom: 8px; color: #4a2e00; font-size: 0.85rem; }
-        .search-buttons { display: flex; gap: 8px; margin-top: 10px; }
-        .search-buttons button { flex: 1; padding: 6px; font-size: 0.7rem; background: #FF8C00; border: none; border-radius: 20px; cursor: pointer; }
+        .search-area { background: #FFF3E0; border-radius: 12px; padding: 10px 14px; margin-top: 10px; }
+        .search-group { margin-bottom: 8px; }
+        .search-group label { font-weight: 700; display: block; margin-bottom: 3px; color: #4a2e00; font-size: 0.7rem; }
+        .search-buttons { display: flex; gap: 6px; margin-top: 6px; }
+        .search-buttons button { flex: 1; padding: 4px; font-size: 0.6rem; background: #FF8C00; border: none; border-radius: 20px; cursor: pointer; }
         .search-buttons button:hover { background: #e07c00; }
-        .article-list-preview { font-size: 10px; color: #666; margin-top: 5px; max-height: 60px; overflow-y: auto; }
-        .filter-stats { background: #e8f5e9; padding: 6px 10px; border-radius: 12px; font-size: 10px; margin-bottom: 8px; }
-        .warning-store { background: #ffebee; padding: 6px 10px; border-radius: 12px; font-size: 10px; margin-bottom: 8px; color: #c62828; }
+        .article-list-preview { font-size: 9px; color: #666; margin-top: 4px; max-height: 40px; overflow-y: auto; }
+        
+        /* Легенда цветов */
+        .color-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; padding: 6px 10px; background: #f5f5f5; border-radius: 10px; font-size: 9px; align-items: center; }
+        .legend-item { display: inline-flex; align-items: center; gap: 4px; }
+        .legend-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
-<div class="app-container">
+<div class="app-container" id="appContainer">
     <div class="header">
-        <h1>📊 ЛЕМАНА ПРО <small>Анализ резервов и товарных запасов</small></h1>
-        <button id="expandPanelBtnGlobal" class="global-expand-btn">▶ Развернуть панель</button>
+        <h1>📊 ЛЕМАНА ПРО <small>Анализ резервов</small></h1>
+        <div class="header-controls">
+            <span id="modeIndicator" class="mode-indicator basic-mode">
+                <span class="indicator-dot"></span> Базовый
+            </span>
+            <button id="toggleModeBtn" class="mode-toggle-btn basic">🔄 Онлайн-редактор</button>
+            <button id="expandPanelBtnGlobal" class="global-expand-btn">▶ Панель</button>
+        </div>
     </div>
 
     <div class="dashboard-flex">
@@ -115,12 +301,12 @@
             <div class="folder-path" id="folderPathDisplay"></div>
             
             <div class="single-upload-section">
-                <button id="toggleReportsCascadeBtn" class="main-upload-btn">📂 Загрузить Excel-отчеты (по одному) ▼</button>
+                <button id="toggleReportsCascadeBtn" class="main-upload-btn">📂 Загрузить Excel-отчеты ▼</button>
                 <div id="reportsCascadeContainer" class="reports-cascade-list"></div>
-                <div class="info-note">✔️ Нажмите на отчет → выберите файл. После загрузки — зелёная галочка ✅</div>
+                <div class="info-note">✔️ Нажмите на отчет → выберите файл</div>
             </div>
             <div class="links-cascade-block">
-                <button id="togglePowerBiLinksBtn" class="secondary-btn">📊 Отчеты Power BI (актуальные ссылки) ▼</button>
+                <button id="togglePowerBiLinksBtn" class="secondary-btn">📊 Отчеты Power BI ▼</button>
                 <div id="powerbiLinksContainer" class="links-cascade">
                     <a class="report-link-item" href="https://clck.ru/3U5Tor" target="_blank">1️⃣ Анализ продаваемости гаммы</a>
                     <a class="report-link-item" href="https://clck.ru/3U5Tqg" target="_blank">2️⃣ УТО</a>
@@ -134,43 +320,110 @@
                     <a class="report-link-item" href="https://clck.ru/3U5U25" target="_blank">🔟 Отчёт по поставщикам Алмаз</a>
                 </div>
             </div>
-            <div class="filters-area">
-                <div class="filter-group"><label>🏬 Магазин</label><select id="storeFilter" class="regular-select"><option value="all">Все магазины</option></select></div>
-                <div class="filter-group"><label>📁 Отдел</label><select id="departmentFilter"><option value="all">Все отделы</option></select></div>
-                <div class="filter-group"><label>📌 Подотдел</label><select id="subdepartmentFilter"><option value="all">Все подотделы</option></select></div>
+            
+            <!-- ===== ОБЛАСТЬ ФИЛЬТРОВ (БАЗОВЫЕ + РАСШИРЕННЫЕ) ===== -->
+            <div class="filters-area" id="filtersArea">
+                <div class="filter-group">
+                    <label>🏬 Магазин</label>
+                    <select id="storeFilter"><option value="all">Все магазины</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>📁 Отдел</label>
+                    <select id="departmentFilter"><option value="all">Все отделы</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>📌 Подотдел</label>
+                    <select id="subdepartmentFilter"><option value="all">Все подотделы</option></select>
+                </div>
+                
+                <!-- ===== РАСШИРЕННЫЕ ФИЛЬТРЫ (только в онлайн-режиме) ===== -->
+                <div id="advancedFilters" class="advanced-filters">
+                    <div class="filter-row-2col">
+                        <div class="filter-group">
+                            <label>⭐ ТОП</label>
+                            <select id="topFilter"><option value="all">Все</option><option value="1">1</option><option value="2">2</option><option value="0">0</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>📊 Гамма</label>
+                            <select id="gammaFilter"><option value="all">Все</option></select>
+                        </div>
+                    </div>
+                    
+                    <div class="range-group">
+                        <label>📅 Запас (дн) <span id="stockRangeLabel" class="range-value">0-999</span></label>
+                        <div class="range-row">
+                            <span class="range-label-min">0</span>
+                            <input type="range" id="stockMinRange" min="0" max="999" value="0">
+                            <input type="range" id="stockMaxRange" min="0" max="999" value="999">
+                            <span class="range-label-max">999</span>
+                        </div>
+                    </div>
+                    
+                    <div class="range-group">
+                        <label>📦 В пути (дн) <span id="transitRangeLabel" class="range-value">0-999</span></label>
+                        <div class="range-row">
+                            <span class="range-label-min">0</span>
+                            <input type="range" id="transitMinRange" min="0" max="999" value="0">
+                            <input type="range" id="transitMaxRange" min="0" max="999" value="999">
+                            <span class="range-label-max">999</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="search-area">
+            <!-- ===== ОНЛАЙН-ПАНЕЛЬ ===== -->
+            <div id="onlinePanel" class="online-panel">
+                <label>✏️ Редактирование</label>
+                <div class="info-note" style="color:#1a5e1a;">Выберите подотдел для полного списка</div>
+                <div style="margin-top:4px;">
+                    <label style="font-size:0.55rem;">📋 Столбцы:</label>
+                    <div id="columnToggleContainer" class="column-toggle-group"></div>
+                </div>
+                <button id="exportChangesBtn" class="export-changes-btn">⬇️ ВЫГРУЗИТЬ MIN Custom</button>
+                <div class="info-note" style="color:#1a5e1a;">Только изменённые строки</div>
+            </div>
+            
+            <!-- ===== ПОИСК ===== -->
+            <div class="search-area" id="searchArea">
                 <div class="search-group">
                     <label>🔍 Поиск по артикулу</label>
-                    <input type="text" id="articleSearchInput" placeholder="Введите артикул (например: 89395151, 84339563)">
-                    <div class="info-note">Можно ввести несколько артикулов через запятую или пробел</div>
+                    <input type="text" id="articleSearchInput" placeholder="Введите артикул">
                 </div>
                 <div class="search-group">
-                    <label>📎 ИЛИ загрузить список артикулов (Excel/TXT)</label>
-                    <button id="loadArticleListBtn" class="secondary-btn" style="margin-top:0;">📂 Загрузить файл со списком</button>
+                    <label>📎 Загрузить список артикулов</label>
+                    <button id="loadArticleListBtn" class="secondary-btn" style="margin-top:0;">📂 Загрузить файл</button>
                     <div id="articleListPreview" class="article-list-preview"></div>
                 </div>
                 <div class="search-buttons">
-                    <button id="applyArticleFilterBtn">🔍 Применить фильтр</button>
-                    <button id="clearArticleFilterBtn">🗑️ Очистить фильтр</button>
+                    <button id="applyArticleFilterBtn">🔍 Применить</button>
+                    <button id="clearArticleFilterBtn">🗑️ Очистить</button>
                 </div>
             </div>
         </div>
 
         <div class="right-panel">
             <div class="right-header">
-                <h3 style="color:#B45F06;">📋 Сводная таблица</h3>
+                <h3>📋 Сводная таблица</h3>
                 <div class="action-buttons">
-                    <button id="computeSummaryBtn" class="btn-compute">🧮 ВЫЧИСЛИТЬ СВОД</button>
-                    <button id="exportMasterBtn" class="btn-excel-export">⬇️ ВЫГРУЗИТЬ ВСЕ ДАННЫЕ</button>
+                    <button id="computeSummaryBtn" class="btn-compute">🧮 ВЫЧИСЛИТЬ</button>
+                    <button id="exportMasterBtn" class="btn-excel-export">⬇️ ВЫГРУЗИТЬ ВСЕ</button>
                 </div>
+            </div>
+            
+            <!-- Легенда цветов -->
+            <div class="color-legend">
+                <span class="legend-item"><span class="legend-color" style="background:#ffcdd2;"></span> &lt;7 дн (критично)</span>
+                <span class="legend-item"><span class="legend-color" style="background:#ffccbc;"></span> 7-14 дн (внимание)</span>
+                <span class="legend-item"><span class="legend-color" style="background:#fff9c4;"></span> 14-22 дн (норма)</span>
+                <span class="legend-item"><span class="legend-color" style="background:#c8e6c9;"></span> &gt;22 дн (хорошо)</span>
+                <span class="legend-item"><span class="legend-color" style="background:#fff3e0;border-color:#FF8C00;"></span> Наибольший резерв MIN</span>
+                <span class="legend-item"><span class="legend-color" style="background:#fffde7;"></span> Редактируемые</span>
             </div>
             
             <div id="uploadSummary" class="upload-summary">📁 Загружено: 0 / 10 отчетов</div>
             <div id="filterStats" class="stats-badge" style="display: none;"></div>
             <div id="statsInfo" class="stats-badge" style="display: none;"></div>
-            <div id="loadingIndicator" style="display: none; background: #fff3e0; padding: 10px; border-radius: 12px; margin-bottom: 10px;">
+            <div id="loadingIndicator" style="display: none; background: #fff3e0; padding: 8px; border-radius: 10px; margin-bottom: 6px;">
                 <div class="loading-spinner"></div> <span id="loadingText">Обработка данных...</span>
                 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             </div>
@@ -183,13 +436,39 @@
             <div id="hiddenCounter" class="hidden-counter" style="display: none;"></div>
         </div>
     </div>
-    <footer>Лемана Про — умное сведение Excel-данных. Автозагрузка работает в Chrome/Edge/Opera. При выгрузке создаётся Excel с цветной шапкой.</footer>
+    <footer>Лемана Pro — анализ резервов и товарных запасов. Автозагрузка работает в Chrome/Edge/Opera.</footer>
 </div>
 
 <script>
     // ==================== НАСТРОЙКИ ====================
-    const DISPLAY_LIMIT = 200;
+    const DISPLAY_LIMIT_BASIC = 200;
+    let DISPLAY_LIMIT = 200;
+    let isOnlineMode = false;
+    let editedRows = new Map();
     
+    const BASE_COLUMNS = [
+        "№ магазина","Артикул","Наименование","BEST гамма","BEST NEXT","Гамма","ТОП","LOC","Статус","CPQ",
+        "min дн","max дн.","Авто min","min ЦО Проект","min ЦО ПАК-Подиум","min ЦО коорд","min 401 NEW","min 441 ПМ","min 500 Проект","min 902 B2B",
+        "max шт.","Брак","ЭКСПО","През. минимум","ТЖ/ПАК","Подиум магазина","Улич. Торг","Наибольший резерв MIN",
+        "Вид минимума","Кол-во проектов",
+        "Вместимость","Отгружено в сред. За 7 дн","Теор сток ГАММА","Запас, шт.","Запас, дн.","В пути, шт.","В пути, дн.","Размер упаковки",
+        "УТО, руб.","УТО, шт.","Кол-во случаев перебоя за 30 дн","Кол-во дней в перебое","20/80","ТС","МС","Корекции","Недопоставки",
+        "Подотдел","ТИП","Дни выхода заказа поставщика","Номер поставщика","Поставщик","Запас больше вместимости",
+        "Дата AVS"
+    ];
+    
+    const EDITABLE_COLUMNS = ["Вид минимума", "Кол-во проектов"];
+    let FULL_COLUMNS = [...BASE_COLUMNS];
+    let visibleColumns = new Set(FULL_COLUMNS);
+    
+    const MIN_TYPES = [
+        { value: "401", label: "401 − Новый товар" },
+        { value: "441", label: "441 − ПМ" },
+        { value: "500", label: "500 − Амбиция проекта" },
+        { value: "902", label: "902 − B2B" }
+    ];
+    
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     const reportFilePatterns = {
         "Гамма": ["гамма", "gamma"],
         "Резервы": ["резервы", "резерв"],
@@ -212,13 +491,15 @@
         "min 401 NEW": "E3F2FD", "min 441 ПМ": "E3F2FD", "min 500 Проект": "E3F2FD", "min 902 B2B": "E3F2FD",
         "max шт.": "FFF3E0", "Брак": "E3F2FD", "ЭКСПО": "E3F2FD", "През. минимум": "E3F2FD",
         "ТЖ/ПАК": "E3F2FD", "Подиум магазина": "E3F2FD", "Улич. Торг": "E3F2FD", "Наибольший резерв MIN": "E3F2FD",
+        "Вид минимума": "FFF8E1", "Кол-во проектов": "FFF8E1",
         "Вместимость": "FFB347", "Отгружено в сред. За 7 дн": "FFEBEE",
         "Теор сток ГАММА": "FFEBEE", "Запас, шт.": "FFEBEE", "Запас, дн.": "E8F5E9",
         "В пути, шт.": "FFEBEE", "В пути, дн.": "E8F5E9", "Размер упаковки": "FFB347",
         "УТО, руб.": "F3E5F5", "УТО, шт.": "F3E5F5", "Кол-во случаев перебоя за 30 дн": "F3E5F5", "Кол-во дней в перебое": "F3E5F5",
         "20/80": "FFB347", "ТС": "FFB347", "МС": "FFB347", "Корекции": "FFFFFF", "Недопоставки": "FFFFFF",
         "Подотдел": "FFB347", "ТИП": "FFB347", "Дни выхода заказа поставщика": "FFFFFF",
-        "Номер поставщика": "FFFFFF", "Поставщик": "FFFFFF", "Запас больше вместимости": "FFFFFF"
+        "Номер поставщика": "FFFFFF", "Поставщик": "FFFFFF", "Запас больше вместимости": "FFFFFF",
+        "Дата AVS": "FFB347"
     };
     
     function toNumber(value, defaultValue = 0) { 
@@ -233,35 +514,53 @@
     function extractStoreNumber(storeString) {
         if (!storeString) return "";
         const match = String(storeString).match(/^(\d+)/);
-        if (match) {
-            return String(parseInt(match[1], 10));
-        }
+        if (match) return String(parseInt(match[1], 10));
         return String(storeString).trim();
+    }
+    
+    function formatDateDDMMYYYY(date) {
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+    
+    function addMonths(date, months) {
+        const result = new Date(date);
+        result.setMonth(result.getMonth() + months);
+        return result;
+    }
+    
+    function getEndDate(type) {
+        const today = new Date();
+        if (type === "441") return "31.12.2049";
+        if (type === "401") return formatDateDDMMYYYY(addMonths(today, 1));
+        if (type === "500" || type === "902") return formatDateDDMMYYYY(addMonths(today, 3));
+        return formatDateDDMMYYYY(addMonths(today, 3));
+    }
+    
+    function getStockColorClass(days) {
+        const num = toNumber(days, 999);
+        if (num === 999) return 'stock-normal';
+        if (num < 7) return 'stock-critical';
+        if (num < 14) return 'stock-warning';
+        if (num < 22) return 'stock-attention';
+        return 'stock-normal';
     }
 
     let gammaData = [], reservyData = [], utoData = [], bestsData = [], avtoMinData = [], maxData = [], ekspoData = [], postavkiData = [], korrekciiData = [], nedopostavkiData = [];
     let calculatedResult = [], filteredCalculatedResult = [], storesSet = new Set(), departmentsSet = new Set(), subdepartmentsSet = new Set();
+    let gammaSet = new Set(), topSet = new Set();
     let loadedReports = { "Гамма": false, "Резервы": false, "УТО": false, "БЭСТ": false, "Автоминимумы": false, "Максы": false, "ЭКСПО": false, "Поставки": false, "Коррекции": false, "Недопоставки": false };
     const reportsNames = ["Гамма", "Резервы", "УТО", "БЭСТ", "Автоминимумы", "Максы", "ЭКСПО", "Поставки", "Коррекции", "Недопоставки"];
     let currentCalculation = null;
     let articleFilterList = null;
-    let selectedStoreForFilter = null;
 
-    const FULL_COLUMNS = [
-        "№ магазина","Артикул","Наименование","BEST гамма","BEST NEXT","Гамма","ТОП","LOC","Статус","CPQ",
-        "min дн","max дн.","Авто min","min ЦО Проект","min ЦО ПАК-Подиум","min ЦО коорд","min 401 NEW","min 441 ПМ","min 500 Проект","min 902 B2B",
-        "max шт.","Брак","ЭКСПО","През. минимум","ТЖ/ПАК","Подиум магазина","Улич. Торг","Наибольший резерв MIN",
-        "Вместимость","Отгружено в сред. За 7 дн","Теор сток ГАММА","Запас, шт.","Запас, дн.","В пути, шт.","В пути, дн.","Размер упаковки",
-        "УТО, руб.","УТО, шт.","Кол-во случаев перебоя за 30 дн","Кол-во дней в перебое","20/80","ТС","МС","Корекции","Недопоставки",
-        "Подотдел","ТИП","Дни выхода заказа поставщика","Номер поставщика","Поставщик","Запас больше вместимости"
-    ];
-
+    // ==================== ЗАГРУЗКА ====================
     async function loadExcelFileFromFile(file, reportName, targetArray) {
         return new Promise((resolve) => {
-            if (file.name.startsWith('~$')) {
-                resolve(false);
-                return;
-            }
+            if (file.name.startsWith('~$')) { resolve(false); return; }
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
@@ -275,10 +574,7 @@
                     const possibleArtColumns = ["Артикул", "SKU", "Код", "Article", "ЛМ-код"];
                     let artColName = "Артикул";
                     for (const col of possibleArtColumns) {
-                        if (headers.includes(col)) {
-                            artColName = col;
-                            break;
-                        }
+                        if (headers.includes(col)) { artColName = col; break; }
                     }
                     
                     const jsonData = [];
@@ -300,11 +596,14 @@
                     targetArray.push(...jsonData);
                     loadedReports[reportName] = true;
                     updateStatusDisplay(reportName, true);
-                    console.log(`✅ Загружен: ${reportName} (${jsonData.length} записей) из ${file.name}`);
-                    if (reportName === "Гамма") updateFiltersFromGamma();
+                    console.log(`✅ Загружен: ${reportName} (${jsonData.length})`);
+                    if (reportName === "Гамма") {
+                        updateFiltersFromGamma();
+                        updateTopAndGammaFilters();
+                    }
                     resolve(true);
                 } catch (err) { 
-                    console.error(`Ошибка загрузки ${reportName}:`, err); 
+                    console.error(err); 
                     loadedReports[reportName] = false; 
                     updateStatusDisplay(reportName, false); 
                     resolve(false); 
@@ -355,14 +654,11 @@
         for (let reportName of reportsNames) {
             const patterns = reportFilePatterns[reportName];
             let foundFile = null;
-            let foundPattern = null;
-            
             for (let file of xlsxFiles) {
                 const fileName = file.name.toLowerCase();
                 for (let pattern of patterns) {
                     if (fileName.includes(pattern.toLowerCase())) {
                         foundFile = file;
-                        foundPattern = pattern;
                         break;
                     }
                 }
@@ -370,9 +666,8 @@
             }
             
             if (foundFile) {
-                foundReports[reportName] = { file: foundFile.name, pattern: foundPattern, status: "загружается" };
+                foundReports[reportName] = { file: foundFile.name, status: "загружается" };
                 progressDiv.innerHTML = `📁 Загружаем: ${reportName}...`;
-                
                 let targetArray;
                 switch(reportName) {
                     case "Гамма": targetArray = gammaData; break;
@@ -388,21 +683,16 @@
                     default: continue;
                 }
                 const success = await loadExcelFileFromFile(foundFile, reportName, targetArray);
-                if (success) {
-                    foundReports[reportName].status = "✅ загружен";
-                    loadedCount++;
-                } else {
-                    foundReports[reportName].status = "❌ ошибка";
-                }
+                if (success) { foundReports[reportName].status = "✅ загружен"; loadedCount++; }
+                else { foundReports[reportName].status = "❌ ошибка"; }
             } else {
-                foundReports[reportName] = { file: "❌ не найден", pattern: patterns.join(", "), status: "❌ не найден" };
+                foundReports[reportName] = { file: "❌ не найден", status: "❌ не найден" };
             }
         }
         
         resultDiv.innerHTML = '';
         for (let [name, info] of Object.entries(foundReports)) {
-            const statusIcon = info.status.includes("✅") ? "✅" : (info.status.includes("❌") ? "❌" : "⏳");
-            resultDiv.innerHTML += `<div>${statusIcon} <strong>${name}</strong>: ${info.file}</div>`;
+            resultDiv.innerHTML += `<div>${info.status} <strong>${name}</strong>: ${info.file}</div>`;
         }
         resultDiv.innerHTML += `<br><strong>✅ Загружено ${loadedCount} из ${reportsNames.length} отчётов</strong>`;
         
@@ -411,7 +701,10 @@
         
         const totalLoaded = Object.values(loadedReports).filter(v => v === true).length;
         document.getElementById('uploadSummary').innerHTML = `📁 Загружено: ${totalLoaded} / 10 отчетов`;
-        if (gammaData.length > 0) updateFiltersFromGamma();
+        if (gammaData.length > 0) {
+            updateFiltersFromGamma();
+            updateTopAndGammaFilters();
+        }
     }
 
     function toggleAutoLoadResult() {
@@ -458,6 +751,19 @@
         const subdeptSelect = document.getElementById('subdepartmentFilter');
         subdeptSelect.innerHTML = '<option value="all">Все подотделы</option>';
         Array.from(subdepartmentsSet).sort().forEach(subdept => subdeptSelect.innerHTML += `<option value="${subdept}">${subdept}</option>`);
+    }
+    
+    function updateTopAndGammaFilters() {
+        gammaSet.clear();
+        topSet.clear();
+        for (const item of gammaData) {
+            const gamma = item["Гамма"]; if (gamma && gamma !== "") gammaSet.add(String(gamma));
+            const top = item["ТОП"] || item["Топ в магазине"]; if (top !== undefined && top !== null && top !== "") topSet.add(String(top));
+        }
+        
+        const gammaSelect = document.getElementById('gammaFilter');
+        gammaSelect.innerHTML = '<option value="all">Все</option>';
+        Array.from(gammaSet).sort().forEach(g => gammaSelect.innerHTML += `<option value="${g}">${g}</option>`);
     }
 
     function updateStatusDisplay(reportName, success) {
@@ -586,7 +892,6 @@
                 }
             }
             const store = extractStoreNumber(storeRaw);
-            
             let art = "";
             if (item["Артикул"] !== undefined) art = String(item["Артикул"]).trim();
             else if (item["SKU"] !== undefined) art = String(item["SKU"]).trim();
@@ -598,9 +903,7 @@
                     }
                 }
             }
-            
             const sumValue = toNumber(item["Сумма Количество"] || item["Количество"] || 0);
-            
             if (store && art) { 
                 const key = `${store}|${art}`;
                 const currentSum = korrekciiMap.get(key) || 0;
@@ -655,6 +958,7 @@
         return "";
     }
 
+    // ==================== calculateRow ====================
     function calculateRow(gammaItem) {
         const artikul = String(gammaItem["Артикул"] || "").trim();
         const store = String(gammaItem["№ магазина"] || "").trim();
@@ -687,8 +991,40 @@
         const podiumMagazina = getSumByReserve(store, artikul, "Подиум магазина");
         const ulichnTorg = getSumByReserve(store, artikul, "Уличн. торговля");
         
-        const minReservs = [avtoMin, minTsProekt, minTsPakPodium, minTsKoord, minNoviyTovar, minPm, minAmbitsiya, minV2B].map(v => toNumber(v)).filter(v => v > 0);
-        const naibolshiyRezervMin = minReservs.length > 0 ? Math.max(...minReservs) : "";
+        const minTypes = {
+            "Авто min": toNumber(avtoMin),
+            "min ЦО Проект": toNumber(minTsProekt),
+            "min ЦО ПАК-Подиум": toNumber(minTsPakPodium),
+            "min ЦО коорд": toNumber(minTsKoord),
+            "min 401 NEW": toNumber(minNoviyTovar),
+            "min 441 ПМ": toNumber(minPm),
+            "min 500 Проект": toNumber(minAmbitsiya),
+            "min 902 B2B": toNumber(minV2B)
+        };
+        
+        let maxMinValue = 0;
+        let maxMinType = "";
+        for (const [type, value] of Object.entries(minTypes)) {
+            if (value > maxMinValue) {
+                maxMinValue = value;
+                maxMinType = type;
+            }
+        }
+        
+        const typeFullName = {
+            "Авто min": "Авто min",
+            "min ЦО Проект": "min ЦО Проект",
+            "min ЦО ПАК-Подиум": "min ЦО ПАК-Подиум",
+            "min ЦО коорд": "min ЦО коорд",
+            "min 401 NEW": "401 NEW",
+            "min 441 ПМ": "441 ПМ",
+            "min 500 Проект": "500 Проект",
+            "min 902 B2B": "902 B2B"
+        };
+        
+        const fullName = typeFullName[maxMinType] || maxMinType;
+        const naibolshiyRezervMin = maxMinValue > 0 ? `${fullName} (${maxMinValue})` : "";
+        
         const teorStokGamma = toNumber(gammaItem["Сумма Кол-во в запасе"]);
         const otgruzheno = toNumber(gammaItem["Отгруженное кол-во"]);
         const otgruzhenoSred = otgruzheno > 0 ? round(otgruzheno / 6, 1) : 0;
@@ -712,6 +1048,7 @@
         const dniZakaza = postavkiMap.get(supplierCode) || "";
         const korrekcii = korrekciiMap.get(mapKey) || 0;
         const nedopostavki = nedopostavkiMap.get(mapKey) || 0;
+        const dateAVS = gammaItem["Дата AVS"] || "";
         
         return {
             "№ магазина": store, "Артикул": artikul, "Наименование": gammaItem["Наименование"] || "",
@@ -724,7 +1061,9 @@
             "min 401 NEW": minNoviyTovar, "min 441 ПМ": minPm, "min 500 Проект": minAmbitsiya, "min 902 B2B": minV2B,
             "max шт.": maxSht, "Брак": brak, "ЭКСПО": ekspo, "През. минимум": prezMinimum,
             "ТЖ/ПАК": tjPak, "Подиум магазина": podiumMagazina, "Улич. Торг": ulichnTorg,
-            "Наибольший резерв MIN": naibolshiyRezervMin, "Вместимость": vmesimost,
+            "Наибольший резерв MIN": naibolshiyRezervMin,
+            "Вид минимума": "", "Кол-во проектов": "",
+            "Вместимость": vmesimost,
             "Отгружено в сред. За 7 дн": otgruzhenoSred, "Теор сток ГАММА": teorStokGamma,
             "Запас, шт.": zapasSht, "Запас, дн.": zapasDn, "В пути, шт.": vPutishSht, "В пути, дн.": vPutishDn,
             "Размер упаковки": gammaItem["Размер упаковки"] || "", "УТО, руб.": utoRub, "УТО, шт.": utoSht,
@@ -733,230 +1072,458 @@
             "МС": gammaItem["Сумма Мертвый сток"] || "", "Корекции": korrekcii, "Недопоставки": nedopostavki,
             "Подотдел": gammaItem["Подотдел"] || "", "ТИП": gammaItem["Тип"] || "",
             "Дни выхода заказа поставщика": dniZakaza, "Номер поставщика": supplierCode,
-            "Поставщик": gammaItem["Имя поставщика"] || "", "Запас больше вместимости": zapasBolsheVmes
+            "Поставщик": gammaItem["Имя поставщика"] || "", "Запас больше вместимости": zapasBolsheVmes,
+            "Дата AVS": dateAVS
         };
     }
 
-    // ==================== ФИЛЬТРАЦИЯ ПО АРТИКУЛАМ И МАГАЗИНУ ====================
-    function applyArticleFilter() {
-        if (!articleFilterList || articleFilterList.size === 0) {
-            filteredCalculatedResult = [...calculatedResult];
+    // ==================== ФИЛЬТРАЦИЯ ====================
+    function applyAllFilters() {
+        if (!calculatedResult.length) {
+            filteredCalculatedResult = [];
             renderFullTableWithFilter();
-            document.getElementById('filterStats').style.display = 'none';
             return;
         }
         
-        const storeFilterValue = document.getElementById('storeFilter').value;
-        const selectedStore = storeFilterValue !== 'all' ? storeFilterValue : null;
+        const storeFilter = document.getElementById('storeFilter').value;
+        const deptFilter = document.getElementById('departmentFilter').value;
+        const subdeptFilter = document.getElementById('subdepartmentFilter').value;
         
-        filteredCalculatedResult = calculatedResult.filter(row => {
-            const art = String(row["Артикул"] || "").trim();
-            if (!articleFilterList.has(art)) return false;
-            if (selectedStore) {
-                const rowStore = String(row["№ магазина"] || "").trim();
-                return rowStore === selectedStore;
-            }
-            return true;
-        });
+        let result = [...calculatedResult];
         
-        renderFullTableWithFilter();
-        
-        const filterStats = document.getElementById('filterStats');
-        if (filterStats) {
-            const storeInfo = selectedStore ? `в магазине ${selectedStore} ` : '';
-            const percent = Math.round((filteredCalculatedResult.length / articleFilterList.size) * 100);
-            filterStats.innerHTML = `🔍 Найдено ${filteredCalculatedResult.length} из ${articleFilterList.size} артикулов ${storeInfo}(${percent}%)`;
-            filterStats.style.display = 'block';
-            filterStats.style.backgroundColor = filteredCalculatedResult.length > 0 ? '#e8f5e9' : '#ffebee';
+        // Базовые фильтры (всегда активны)
+        if (storeFilter !== 'all') {
+            result = result.filter(row => String(row["№ магазина"] || "") === storeFilter);
+        }
+        if (deptFilter !== 'all') {
+            result = result.filter(row => String(row["Отдел"] || "") === deptFilter);
+        }
+        if (subdeptFilter !== 'all') {
+            result = result.filter(row => String(row["Подотдел"] || "") === subdeptFilter);
         }
         
-        const hiddenDiv = document.getElementById('hiddenCounter');
-        if (filteredCalculatedResult.length > DISPLAY_LIMIT) {
-            hiddenDiv.style.display = 'block';
-            hiddenDiv.innerHTML = `📌 Найдено ${filteredCalculatedResult.length} товаров | Отображаются первые ${DISPLAY_LIMIT}`;
-        } else if (filteredCalculatedResult.length > 0) {
-            hiddenDiv.style.display = 'block';
-            hiddenDiv.innerHTML = `📌 Найдено ${filteredCalculatedResult.length} товаров`;
-        } else {
-            hiddenDiv.style.display = 'none';
-        }
-    }
-    
-    function clearArticleFilter() {
-        articleFilterList = null;
-        selectedStoreForFilter = null;
-        document.getElementById('articleSearchInput').value = '';
-        const previewDiv = document.getElementById('articleListPreview');
-        if (previewDiv) {
-            previewDiv.innerHTML = '';
-        }
-        filteredCalculatedResult = [...calculatedResult];
-        renderFullTableWithFilter();
-        
-        const filterStats = document.getElementById('filterStats');
-        if (filterStats) filterStats.style.display = 'none';
-        
-        const hiddenDiv = document.getElementById('hiddenCounter');
-        if (calculatedResult.length > DISPLAY_LIMIT) {
-            hiddenDiv.style.display = 'block';
-            hiddenDiv.innerHTML = `📌 Еще ${calculatedResult.length - DISPLAY_LIMIT} товаров не отображаются. Нажмите «ВЫГРУЗИТЬ ВСЕ ДАННЫЕ» для полного отчета.`;
-        } else {
-            hiddenDiv.style.display = 'none';
-        }
-    }
-    
-    function loadArticleListFromFile() {
-        const storeFilterValue = document.getElementById('storeFilter').value;
-        if (storeFilterValue === 'all') {
-            alert("⚠️ Сначала выберите магазин в фильтре выше!\n\nЗатем загружайте список артикулов для этого магазина.");
-            return;
-        }
-        
-        selectedStoreForFilter = storeFilterValue;
-        
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.xlsx, .xls, .csv, .txt';
-        input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Расширенные фильтры (только в онлайн-режиме)
+        if (isOnlineMode) {
+            const topFilter = document.getElementById('topFilter').value;
+            const gammaFilter = document.getElementById('gammaFilter').value;
+            const stockMin = parseInt(document.getElementById('stockMinRange').value) || 0;
+            const stockMax = parseInt(document.getElementById('stockMaxRange').value) || 999;
+            const transitMin = parseInt(document.getElementById('transitMinRange').value) || 0;
+            const transitMax = parseInt(document.getElementById('transitMaxRange').value) || 999;
             
-            try {
-                let articles = new Set();
-                
-                if (file.name.match(/\.(xlsx|xls)$/i)) {
-                    const data = await file.arrayBuffer();
-                    const workbook = XLSX.read(data);
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rawData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
-                    
-                    for (let i = 0; i < rawData.length; i++) {
-                        const row = rawData[i];
-                        if (row && row[0]) {
-                            let art = String(row[0]).trim();
-                            art = art.replace(/[^\d]/g, '');
-                            if (art && art !== "" && art.length >= 4) {
-                                articles.add(art);
-                            }
-                        }
-                    }
-                } else {
-                    const text = await file.text();
-                    const lines = text.split(/\r?\n/);
-                    for (const line of lines) {
-                        let art = line.trim();
-                        art = art.replace(/[^\d]/g, '');
-                        if (art && art !== "" && art.length >= 4) {
-                            articles.add(art);
-                        }
-                    }
-                }
-                
-                if (articles.size === 0) {
-                    alert("❌ Не найдено артикулов в файле.\n\nУбедитесь, что артикулы в первом столбце (только цифры).");
-                    return;
-                }
-                
-                articleFilterList = articles;
-                
-                const preview = Array.from(articles).slice(0, 10).join(', ');
-                const previewDiv = document.getElementById('articleListPreview');
-                if (previewDiv) {
-                    previewDiv.innerHTML = `📋 Загружено ${articles.size} артикулов для магазина ${selectedStoreForFilter}:<br>${preview}${articles.size > 10 ? '...' : ''}`;
-                    previewDiv.style.color = '#15803d';
-                    previewDiv.style.fontWeight = 'bold';
-                }
-                
-                if (calculatedResult.length) {
-                    applyArticleFilter();
-                } else {
-                    alert("📌 Сначала загрузите данные и нажмите «ВЫЧИСЛИТЬ СВОД»");
-                }
-                
-            } catch (err) {
-                console.error(err);
-                alert("❌ Ошибка при загрузке файла. Проверьте формат данных.");
+            if (topFilter !== 'all') {
+                result = result.filter(row => String(row["ТОП"] || "") === topFilter);
             }
-        };
-        input.click();
+            if (gammaFilter !== 'all') {
+                result = result.filter(row => String(row["Гамма"] || "") === gammaFilter);
+            }
+            result = result.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                return days >= stockMin && days <= stockMax;
+            });
+            result = result.filter(row => {
+                const days = toNumber(row["В пути, дн."], 0);
+                return days >= transitMin && days <= transitMax;
+            });
+        }
+        
+        // Фильтр по артикулам
+        if (articleFilterList && articleFilterList.size > 0) {
+            result = result.filter(row => articleFilterList.has(String(row["Артикул"] || "").trim()));
+        }
+        
+        filteredCalculatedResult = result;
+        renderFullTableWithFilter();
+        
+        // Убираем плашку "Найдено X из Y" — больше не показываем
     }
-    
-    function applySingleArticleFilter() {
-        const inputValue = document.getElementById('articleSearchInput').value.trim();
-        if (!inputValue) {
-            alert("Введите артикул для поиска");
-            return;
-        }
-        
-        const storeFilterValue = document.getElementById('storeFilter').value;
-        if (storeFilterValue === 'all') {
-            alert("⚠️ Сначала выберите магазин в фильтре выше!");
-            return;
-        }
-        
-        selectedStoreForFilter = storeFilterValue;
-        
-        let articles = inputValue.split(/[,\s\n]+/).filter(a => a.trim());
-        articles = articles.map(a => a.replace(/[^\d]/g, '')).filter(a => a && a.length >= 4);
-        
-        if (articles.length === 0) {
-            alert("Введите корректные артикулы (только цифры, минимум 4 символа)");
-            return;
-        }
-        
-        articleFilterList = new Set(articles);
-        
-        const previewDiv = document.getElementById('articleListPreview');
-        if (previewDiv) {
-            previewDiv.innerHTML = `🔍 Поиск по: ${articles.slice(0, 5).join(', ')}${articles.length > 5 ? '...' : ''} (${articles.length} арт.) для магазина ${selectedStoreForFilter}`;
-            previewDiv.style.color = '#b45f06';
-        }
-        
-        if (calculatedResult.length) {
-            applyArticleFilter();
-        } else {
-            alert("📌 Сначала загрузите данные и нажмите «ВЫЧИСЛИТЬ СВОД»");
-        }
-    }
-    
+
+    // ==================== ОТРИСОВКА ТАБЛИЦЫ ====================
     function renderFullTableWithFilter() {
-        const dataToShow = filteredCalculatedResult.length ? filteredCalculatedResult : calculatedResult;
+        let dataToShow = filteredCalculatedResult.length ? filteredCalculatedResult : calculatedResult;
+        
+        const subdeptFilter = document.getElementById('subdepartmentFilter').value;
+        if (isOnlineMode && subdeptFilter !== 'all') {
+            DISPLAY_LIMIT = Infinity;
+        } else {
+            DISPLAY_LIMIT = DISPLAY_LIMIT_BASIC;
+        }
+        
+        if (DISPLAY_LIMIT !== Infinity && dataToShow.length > DISPLAY_LIMIT) {
+            dataToShow = dataToShow.slice(0, DISPLAY_LIMIT);
+        }
+        
+        let visibleCols = FULL_COLUMNS.filter(col => visibleColumns.has(col));
         
         const thead = document.getElementById("tableHeader");
         if (!thead) return;
         thead.innerHTML = '';
         const theadRow = document.createElement("tr");
-        FULL_COLUMNS.forEach(col => {
+        visibleCols.forEach(col => {
             const th = document.createElement("th");
             th.textContent = col;
+            if (EDITABLE_COLUMNS.includes(col)) {
+                th.style.backgroundColor = '#fff8e1';
+                th.title = 'Редактируемый';
+            }
             theadRow.appendChild(th);
         });
         thead.appendChild(theadRow);
         
         const tbody = document.getElementById("masterTbody");
         if (!tbody) return;
-        
         if (!dataToShow.length) {
-            tbody.innerHTML = '<tr><td colspan="55" style="text-align:center;">Нет данных. Нажмите «Вычислить свод».<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="55" style="text-align:center;">Нет данных. Нажмите «Вычислить».<\/td><\/tr>';
             return;
         }
         
-        const displayData = dataToShow.slice(0, DISPLAY_LIMIT);
         tbody.innerHTML = '';
-        for (const row of displayData) {
+        for (const row of dataToShow) {
             const tr = document.createElement("tr");
-            for (const col of FULL_COLUMNS) {
+            const rowKey = `${row["№ магазина"]}|${row["Артикул"]}`;
+            const editedData = editedRows.get(rowKey);
+            
+            visibleCols.forEach(col => {
                 const td = document.createElement("td");
-                let value = row[col];
-                if (value === undefined || value === null) value = '';
-                if (typeof value === 'number' && value !== 0) value = value.toFixed(2);
-                td.textContent = value;
+                
+                if (col === "Вид минимума") {
+                    const select = document.createElement("select");
+                    const defaultVal = editedData?.видМинимума || "";
+                    const emptyOpt = document.createElement("option");
+                    emptyOpt.value = "";
+                    emptyOpt.textContent = "--";
+                    select.appendChild(emptyOpt);
+                    
+                    MIN_TYPES.forEach(type => {
+                        const opt = document.createElement("option");
+                        opt.value = type.value;
+                        opt.textContent = type.label;
+                        if (type.value === defaultVal) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                    
+                    select.addEventListener('change', function() {
+                        const val = this.value;
+                        const key = `${row["№ магазина"]}|${row["Артикул"]}`;
+                        if (!editedRows.has(key)) {
+                            editedRows.set(key, { видМинимума: "", колВоПроектов: "" });
+                        }
+                        editedRows.get(key).видМинимума = val;
+                    });
+                    
+                    td.appendChild(select);
+                    td.classList.add('editable');
+                    
+                } else if (col === "Кол-во проектов") {
+                    const input = document.createElement("input");
+                    input.type = "number";
+                    input.min = "0";
+                    input.step = "1";
+                    const defaultVal = editedData?.колВоПроектов || "";
+                    input.value = defaultVal;
+                    input.placeholder = "0";
+                    input.style.width = "100%";
+                    input.style.padding = "1px 4px";
+                    input.style.border = "1px solid #FFCF8A";
+                    input.style.borderRadius = "4px";
+                    input.style.fontSize = "0.6rem";
+                    
+                    input.addEventListener('change', function() {
+                        const val = this.value;
+                        const key = `${row["№ магазина"]}|${row["Артикул"]}`;
+                        if (!editedRows.has(key)) {
+                            editedRows.set(key, { видМинимума: "", колВоПроектов: "" });
+                        }
+                        editedRows.get(key).колВоПроектов = val;
+                    });
+                    
+                    td.appendChild(input);
+                    td.classList.add('editable');
+                    
+                } else {
+                    let value = row[col];
+                    if (value === undefined || value === null) value = '';
+                    if (typeof value === 'number' && value !== 0) value = value.toFixed(2);
+                    td.textContent = value;
+                    
+                    // Подсветка для "Запас, дн." и "В пути, дн."
+                    if (col === "Запас, дн.") {
+                        const days = toNumber(value, 999);
+                        td.classList.add(getStockColorClass(days));
+                    }
+                    if (col === "В пути, дн.") {
+                        const days = toNumber(value, 0);
+                        td.classList.add(getStockColorClass(days));
+                    }
+                    
+                    // Подсветка для "Наибольший резерв MIN"
+                    if (col === "Наибольший резерв MIN" && value && value.includes("(")) {
+                        td.classList.add('max-min-highlight');
+                    }
+                }
                 tr.appendChild(td);
-            }
+            });
             tbody.appendChild(tr);
+        }
+        
+        const statsDiv = document.getElementById('statsInfo');
+        if (statsDiv) {
+            const totalCount = filteredCalculatedResult.length || calculatedResult.length;
+            const limitText = DISPLAY_LIMIT === Infinity ? 'все' : `первые ${DISPLAY_LIMIT}`;
+            statsDiv.innerHTML = `📊 Всего: ${totalCount} товаров | 📺 ${limitText}`;
         }
     }
 
+    // ==================== ЭКСПОРТ ИЗМЕНЕНИЙ ====================
+    async function exportChanges() {
+        if (editedRows.size === 0) {
+            alert("Нет изменений для экспорта.");
+            return;
+        }
+        
+        const storeFilter = document.getElementById('storeFilter').value;
+        if (storeFilter === 'all') {
+            alert("⚠️ Выберите конкретный магазин!");
+            return;
+        }
+        
+        const loadingDiv = document.getElementById('loadingIndicator');
+        loadingDiv.style.display = 'block';
+        document.getElementById('loadingText').innerText = 'Формируем MIN Custom...';
+        
+        try {
+            const exportData = [];
+            
+            for (const [key, data] of editedRows) {
+                const [store, art] = key.split('|');
+                if (store !== storeFilter) continue;
+                
+                let minType = data.видМинимума || "";
+                let quantity = data.колВоПроектов || "";
+                
+                if (!minType && !quantity) continue;
+                if (!quantity) quantity = "0";
+                
+                const finalType = minType || "0";
+                const today = new Date();
+                const startDate = formatDateDDMMYYYY(today);
+                const endDate = getEndDate(finalType);
+                
+                exportData.push({
+                    "Магазин": store,
+                    "Артикул": art,
+                    "Тип": finalType,
+                    "Количество": quantity,
+                    "Дата начала": startDate,
+                    "Дата окончания": endDate
+                });
+            }
+            
+            if (exportData.length === 0) {
+                alert("Нет данных для экспорта.");
+                loadingDiv.style.display = 'none';
+                return;
+            }
+            
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('MIN_Custom');
+            
+            const headers = ["Магазин", "Артикул", "Тип", "Количество", "Дата начала", "Дата окончания"];
+            const headerRow = worksheet.addRow(headers);
+            headerRow.font = { bold: true };
+            headerRow.alignment = { horizontal: "center", vertical: "middle" };
+            
+            for (const row of exportData) {
+                worksheet.addRow([
+                    row["Магазин"],
+                    row["Артикул"],
+                    row["Тип"],
+                    row["Количество"],
+                    row["Дата начала"],
+                    row["Дата окончания"]
+                ]);
+            }
+            
+            worksheet.getColumn(1).width = 15;
+            worksheet.getColumn(2).width = 15;
+            worksheet.getColumn(3).width = 15;
+            worksheet.getColumn(4).width = 15;
+            worksheet.getColumn(5).width = 22;
+            worksheet.getColumn(6).width = 22;
+            
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            
+            const today = new Date();
+            const fileName = `almaz_min_custom_${storeFilter}_${today.toISOString().split('T')[0]}.xlsx`;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            loadingDiv.style.display = 'none';
+            alert(`✅ Выгружено ${exportData.length} изменений в файл "${fileName}"`);
+            
+        } catch (error) {
+            console.error(error);
+            loadingDiv.style.display = 'none';
+            alert("Ошибка при формировании файла.");
+        }
+    }
+
+    // ==================== УПРАВЛЕНИЕ РЕЖИМАМИ ====================
+    function toggleMode() {
+        isOnlineMode = !isOnlineMode;
+        const btn = document.getElementById('toggleModeBtn');
+        const indicator = document.getElementById('modeIndicator');
+        const onlinePanel = document.getElementById('onlinePanel');
+        const advancedFilters = document.getElementById('advancedFilters');
+        const filtersArea = document.getElementById('filtersArea');
+        
+        if (isOnlineMode) {
+            btn.textContent = '🔄 Базовый';
+            btn.className = 'mode-toggle-btn online active';
+            indicator.innerHTML = '<span class="indicator-dot"></span> 🌐 Онлайн';
+            indicator.className = 'mode-indicator online-mode';
+            onlinePanel.style.display = 'block';
+            advancedFilters.classList.add('show');
+            filtersArea.style.maxHeight = '650px';
+            EDITABLE_COLUMNS.forEach(col => visibleColumns.add(col));
+            generateColumnToggles();
+        } else {
+            btn.textContent = '🔄 Онлайн-редактор';
+            btn.className = 'mode-toggle-btn basic';
+            indicator.innerHTML = '<span class="indicator-dot"></span> 📌 Базовый';
+            indicator.className = 'mode-indicator basic-mode';
+            onlinePanel.style.display = 'none';
+            advancedFilters.classList.remove('show');
+            filtersArea.style.maxHeight = '400px';
+            EDITABLE_COLUMNS.forEach(col => visibleColumns.delete(col));
+        }
+        
+        if (calculatedResult.length) {
+            applyAllFilters();
+        } else {
+            renderFullTableWithFilter();
+        }
+    }
+    
+    function generateColumnToggles() {
+        const container = document.getElementById('columnToggleContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        FULL_COLUMNS.forEach(col => {
+            const label = document.createElement('label');
+            label.className = 'column-toggle-item';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = visibleColumns.has(col);
+            checkbox.addEventListener('change', function() {
+                if (this.checked) visibleColumns.add(col);
+                else visibleColumns.delete(col);
+                renderFullTableWithFilter();
+            });
+            const span = document.createElement('span');
+            span.textContent = col.length > 20 ? col.substring(0, 18) + '…' : col;
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            container.appendChild(label);
+        });
+    }
+
+    // ==================== ФИЛЬТРАЦИЯ ПО АРТИКУЛАМ ====================
+    function applyArticleFilter() {
+        const inputValue = document.getElementById('articleSearchInput').value.trim();
+        if (!inputValue) {
+            if (articleFilterList && articleFilterList.size > 0) {
+                applyAllFilters();
+                return;
+            }
+            articleFilterList = null;
+            document.getElementById('articleListPreview').innerHTML = '';
+            applyAllFilters();
+            return;
+        }
+        
+        const storeFilterValue = document.getElementById('storeFilter').value;
+        if (storeFilterValue === 'all') {
+            alert("⚠️ Сначала выберите магазин!");
+            return;
+        }
+        
+        let articles = inputValue.split(/[,\s\n]+/).filter(a => a.trim());
+        articles = articles.map(a => a.replace(/[^\d]/g, '')).filter(a => a && a.length >= 4);
+        if (articles.length === 0) {
+            alert("Введите корректные артикулы (только цифры)");
+            return;
+        }
+        articleFilterList = new Set(articles);
+        document.getElementById('articleListPreview').innerHTML = `🔍 Поиск: ${articles.slice(0, 5).join(', ')}${articles.length > 5 ? '...' : ''} (${articles.length} арт.)`;
+        applyAllFilters();
+    }
+    
+    function clearArticleFilter() {
+        articleFilterList = null;
+        document.getElementById('articleSearchInput').value = '';
+        document.getElementById('articleListPreview').innerHTML = '';
+        applyAllFilters();
+    }
+    
+    function loadArticleListFromFile() {
+        const storeFilterValue = document.getElementById('storeFilter').value;
+        if (storeFilterValue === 'all') {
+            alert("⚠️ Сначала выберите магазин!");
+            return;
+        }
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx, .xls, .csv, .txt';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                let articles = new Set();
+                if (file.name.match(/\.(xlsx|xls)$/i)) {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data);
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rawData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                    for (let i = 0; i < rawData.length; i++) {
+                        const row = rawData[i];
+                        if (row && row[0]) {
+                            let art = String(row[0]).trim().replace(/[^\d]/g, '');
+                            if (art && art.length >= 4) articles.add(art);
+                        }
+                    }
+                } else {
+                    const text = await file.text();
+                    const lines = text.split(/\r?\n/);
+                    for (const line of lines) {
+                        let art = line.trim().replace(/[^\d]/g, '');
+                        if (art && art.length >= 4) articles.add(art);
+                    }
+                }
+                if (articles.size === 0) {
+                    alert("❌ Не найдено артикулов.");
+                    return;
+                }
+                articleFilterList = articles;
+                const preview = Array.from(articles).slice(0, 10).join(', ');
+                document.getElementById('articleListPreview').innerHTML = `📋 Загружено ${articles.size} артикулов: ${preview}${articles.size > 10 ? '...' : ''}`;
+                applyAllFilters();
+            } catch (err) {
+                console.error(err);
+                alert("❌ Ошибка при загрузке файла.");
+            }
+        };
+        input.click();
+    }
+
+    // ==================== РАСЧЁТ ====================
     async function computeSummaryAsync() {
         if (!gammaData.length) { alert("Нет загруженных данных. Сначала загрузите файл 'Гамма'."); return; }
         if (currentCalculation) currentCalculation.cancelled = true;
@@ -964,34 +1531,23 @@
         currentCalculation = calcId;
         currentCalculation.cancelled = false;
         
-        const storeFilter = document.getElementById('storeFilter').value;
-        const departmentFilter = document.getElementById('departmentFilter').value;
-        const subdepartmentFilter = document.getElementById('subdepartmentFilter').value;
-        
-        let filtered = gammaData;
-        if (storeFilter !== 'all') filtered = filtered.filter(item => String(item["№ магазина"] || "") === storeFilter);
-        if (departmentFilter !== 'all') filtered = filtered.filter(item => String(item["Отдел"] || "") === departmentFilter);
-        if (subdepartmentFilter !== 'all') filtered = filtered.filter(item => String(item["Подотдел"] || "") === subdepartmentFilter);
-        
-        if (filtered.length === 0) { alert("Нет товаров для выбранных фильтров"); return; }
-        
         const loadingDiv = document.getElementById('loadingIndicator');
         const progressFill = document.getElementById('progressFill');
         const loadingText = document.getElementById('loadingText');
         loadingDiv.style.display = 'block';
         progressFill.style.width = '0%';
-        loadingText.innerText = `Обработка ${filtered.length} товаров...`;
+        loadingText.innerText = `Обработка ${gammaData.length} товаров...`;
         
         buildMaps();
         
-        const total = filtered.length;
+        const total = gammaData.length;
         const chunkSize = 500;
         let results = [];
         
         for (let start = 0; start < total; start += chunkSize) {
             if (currentCalculation.cancelled) { loadingDiv.style.display = 'none'; return; }
             const end = Math.min(start + chunkSize, total);
-            const chunk = filtered.slice(start, end);
+            const chunk = gammaData.slice(start, end);
             for (const item of chunk) { 
                 const row = calculateRow(item); 
                 if (row) results.push(row); 
@@ -1009,34 +1565,23 @@
         
         const statsDiv = document.getElementById('statsInfo');
         statsDiv.style.display = 'block';
-        statsDiv.innerHTML = `📊 Всего рассчитано: ${calculatedResult.length} товаров | 📺 В таблице отображаются первые ${DISPLAY_LIMIT}`;
+        statsDiv.innerHTML = `📊 Всего рассчитано: ${calculatedResult.length} товаров`;
         
-        // Если есть активный фильтр по артикулам, применяем его
-        if (articleFilterList && articleFilterList.size > 0) {
-            applyArticleFilter();
-        } else {
-            renderFullTableWithFilter();
-        }
-        
+        applyAllFilters();
+        if (isOnlineMode) generateColumnToggles();
         console.log(`✅ Расчет завершен. Найдено ${results.length} товаров.`);
     }
 
+    // ==================== ЭКСПОРТ ВСЕХ ДАННЫХ ====================
     async function exportAllData() {
-        if (!calculatedResult.length) { 
-            alert("Нет данных для экспорта. Сначала выполните расчет."); 
-            return; 
-        }
-        
+        if (!calculatedResult.length) { alert("Нет данных для экспорта."); return; }
         const dataToExport = filteredCalculatedResult.length ? filteredCalculatedResult : calculatedResult;
-        
         const loadingDiv = document.getElementById('loadingIndicator');
         loadingDiv.style.display = 'block';
-        document.getElementById('loadingText').innerText = 'Формируем Excel с цветной шапкой...';
-        
+        document.getElementById('loadingText').innerText = 'Формируем Excel...';
         try {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Сводная Лемана');
-            
             worksheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 1 }];
             
             const headerRow = worksheet.addRow(FULL_COLUMNS);
@@ -1056,6 +1601,14 @@
                 for (const col of FULL_COLUMNS) {
                     let value = row[col];
                     if (value === undefined || value === null) value = '';
+                    if (EDITABLE_COLUMNS.includes(col)) {
+                        const key = `${row["№ магазина"]}|${row["Артикул"]}`;
+                        const edited = editedRows.get(key);
+                        if (edited) {
+                            if (col === "Вид минимума") value = edited.видМинимума || '';
+                            if (col === "Кол-во проектов") value = edited.колВоПроектов || '';
+                        }
+                    }
                     rowData.push(value);
                 }
                 const dataRow = worksheet.addRow(rowData);
@@ -1092,12 +1645,23 @@
             URL.revokeObjectURL(url);
             
             loadingDiv.style.display = 'none';
-            alert(`✅ Выгружено ${dataToExport.length} товаров в файл "${fileName}"!`);
+            alert(`✅ Выгружено ${dataToExport.length} товаров`);
         } catch (error) {
-            console.error("Ошибка экспорта:", error);
+            console.error(error);
             loadingDiv.style.display = 'none';
-            alert("Ошибка при формировании Excel. Попробуйте ещё раз.");
+            alert("Ошибка при формировании Excel.");
         }
+    }
+
+    // ==================== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ РЕЙНДЖЕЙ ====================
+    function updateRangeLabels() {
+        const stockMin = document.getElementById('stockMinRange').value;
+        const stockMax = document.getElementById('stockMaxRange').value;
+        document.getElementById('stockRangeLabel').textContent = `${stockMin}-${stockMax}`;
+        
+        const transitMin = document.getElementById('transitMinRange').value;
+        const transitMax = document.getElementById('transitMaxRange').value;
+        document.getElementById('transitRangeLabel').textContent = `${transitMin}-${transitMax}`;
     }
 
     // ==================== КАСКАДНЫЙ СПИСОК ====================
@@ -1114,8 +1678,8 @@
                     <span style="color:#FF8C00;">▼</span>
                 </div>
                 <div class="cascade-content">
-                    <button class="btn-load-excel" data-report="${name}">📎 Загрузить Excel: ${name}</button>
-                    <div class="info-note">Загрузите файл отчёта ${name}</div>
+                    <button class="btn-load-excel" data-report="${name}">📎 Загрузить</button>
+                    <div class="info-note">${name}</div>
                 </div>
             `;
             const header = div.querySelector(".cascade-header");
@@ -1151,11 +1715,40 @@
     document.getElementById("autoLoadFolderBtn")?.addEventListener("click", () => selectFolder());
     document.getElementById("autoLoadResultHeader")?.addEventListener("click", () => toggleAutoLoadResult());
     
-    document.getElementById("applyArticleFilterBtn")?.addEventListener("click", () => applySingleArticleFilter());
+    document.getElementById("toggleModeBtn")?.addEventListener("click", () => toggleMode());
+    document.getElementById("exportChangesBtn")?.addEventListener("click", () => exportChanges());
+    
+    document.getElementById("applyArticleFilterBtn")?.addEventListener("click", () => applyArticleFilter());
     document.getElementById("clearArticleFilterBtn")?.addEventListener("click", () => clearArticleFilter());
     document.getElementById("loadArticleListBtn")?.addEventListener("click", () => loadArticleListFromFile());
     document.getElementById("articleSearchInput")?.addEventListener("keypress", (e) => {
-        if (e.key === 'Enter') applySingleArticleFilter();
+        if (e.key === 'Enter') applyArticleFilter();
+    });
+    
+    // Базовые фильтры (всегда активны)
+    document.getElementById("storeFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
+    document.getElementById("departmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
+    document.getElementById("subdepartmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
+    
+    // Расширенные фильтры (только в онлайн-режиме)
+    document.getElementById("topFilter")?.addEventListener("change", function() { applyAllFilters(); });
+    document.getElementById("gammaFilter")?.addEventListener("change", function() { applyAllFilters(); });
+    
+    document.getElementById("stockMinRange")?.addEventListener("input", function() { 
+        updateRangeLabels(); 
+        applyAllFilters(); 
+    });
+    document.getElementById("stockMaxRange")?.addEventListener("input", function() { 
+        updateRangeLabels(); 
+        applyAllFilters(); 
+    });
+    document.getElementById("transitMinRange")?.addEventListener("input", function() { 
+        updateRangeLabels(); 
+        applyAllFilters(); 
+    });
+    document.getElementById("transitMaxRange")?.addEventListener("input", function() { 
+        updateRangeLabels(); 
+        applyAllFilters(); 
     });
     
     const toggleMainBtn = document.getElementById("toggleReportsCascadeBtn");
@@ -1182,10 +1775,8 @@
     
     document.getElementById("computeSummaryBtn")?.addEventListener("click", () => computeSummaryAsync());
     document.getElementById("exportMasterBtn")?.addEventListener("click", () => exportAllData());
-    document.getElementById("storeFilter")?.addEventListener("change", () => computeSummaryAsync());
-    document.getElementById("departmentFilter")?.addEventListener("change", () => computeSummaryAsync());
-    document.getElementById("subdepartmentFilter")?.addEventListener("change", () => computeSummaryAsync());
     
+    updateRangeLabels();
     buildCascade();
     renderFullTableWithFilter();
     console.log('📌 Приложение готово!');
