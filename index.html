@@ -66,7 +66,7 @@
         .report-link-item { display: block; padding: 4px 10px; margin: 4px 0; background: white; border-radius: 30px; text-decoration: none; color: #1e1e1e; font-size: 0.65rem; font-weight: 500; border-left: 4px solid #FF8C00; transition: 0.2s; }
         .report-link-item:hover { background: #FFE1B3; }
         
-        /* ===== ОБЛАСТЬ ФИЛЬТРОВ (БАЗОВАЯ) ===== */
+        /* ===== ОБЛАСТЬ ФИЛЬТРОВ ===== */
         .filters-area { 
             background: #FFF3E0; 
             border-radius: 12px; 
@@ -110,7 +110,7 @@
         .filter-group select:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.2); }
         .filter-group select option { padding: 4px 8px; }
         
-        /* ===== РАСШИРЕННЫЕ ФИЛЬТРЫ (ТОЛЬКО В ОНЛАЙН-РЕЖИМЕ) ===== */
+        /* ===== РАСШИРЕННЫЕ ФИЛЬТРЫ ===== */
         .advanced-filters {
             display: none;
             padding-top: 10px;
@@ -124,60 +124,53 @@
         .filter-row-2col .filter-group label { font-size: 0.7rem; }
         .filter-row-2col .filter-group select { padding: 6px 10px; font-size: 0.7rem; }
         
-        /* Компактные ползунки */
+        /* ===== ПОЛЯ ВВОДА ДЛЯ ДНЕЙ (вместо ползунков) ===== */
         .range-group { margin-bottom: 8px; }
         .range-group label { font-weight: 700; display: block; margin-bottom: 3px; color: #4a2e00; font-size: 0.7rem; }
         .range-row { display: flex; align-items: center; gap: 6px; }
-        .range-row input[type="range"] { 
-            flex: 1; 
-            height: 3px; 
-            -webkit-appearance: none; 
-            background: #FFCF8A; 
-            border-radius: 2px; 
-            outline: none; 
-            margin: 0;
+        .range-input {
+            width: 55px;
+            padding: 4px 6px;
+            border-radius: 20px;
+            border: 1px solid #FFCF8A;
+            text-align: center;
+            font-size: 0.7rem;
+            background: white;
+            transition: 0.2s;
         }
-        .range-row input[type="range"]::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
-            width: 12px; 
-            height: 12px; 
-            border-radius: 50%; 
-            background: #FF8C00; 
-            cursor: pointer; 
+        .range-input:focus {
+            outline: none;
+            border-color: #FF8C00;
+            box-shadow: 0 0 0 3px rgba(255,140,0,0.2);
         }
-        .range-row input[type="range"]::-moz-range-thumb { 
-            width: 12px; 
-            height: 12px; 
-            border-radius: 50%; 
-            background: #FF8C00; 
-            cursor: pointer; 
-            border: none; 
-        }
+        .range-input:hover { border-color: #FF8C00; }
+        .range-sep { font-size: 0.6rem; color: #999; }
         .range-value { 
-            min-width: 30px; 
+            min-width: 40px; 
             text-align: center; 
             font-size: 0.6rem; 
             font-weight: 700; 
             color: #4a2e00; 
             background: white; 
-            padding: 1px 5px; 
+            padding: 1px 6px; 
             border-radius: 10px; 
             border: 1px solid #FFCF8A; 
+            display: inline-block;
+            margin-left: 6px;
         }
-        .range-label-min, .range-label-max { font-size: 0.5rem; color: #999; }
         
-        /* ===== ОНЛАЙН-ПАНЕЛЬ ===== */
+        /* ===== ОНЛАЙН-ПАНЕЛЬ (увеличенная) ===== */
         .online-panel { 
             background: #e8f5e9; 
             border-radius: 10px; 
-            padding: 8px 12px; 
+            padding: 12px 16px; 
             margin-top: 6px; 
             border: 2px solid #2c5f2d; 
             display: none;
             resize: vertical;
             overflow-y: auto;
-            min-height: 80px;
-            max-height: 400px;
+            min-height: 120px;
+            max-height: 500px;
             position: relative;
             transition: 0.3s;
         }
@@ -194,7 +187,7 @@
             pointer-events: none;
             opacity: 0.5;
         }
-        .online-panel label { font-weight: 700; font-size: 0.65rem; color: #1e1e1e; }
+        .online-panel label { font-weight: 700; font-size: 0.7rem; color: #1e1e1e; }
         .online-panel .info-note { color: #1a5e1a; font-size: 0.55rem; }
         
         .column-toggle-group { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; max-height: 80px; overflow-y: auto; }
@@ -321,7 +314,7 @@
                 </div>
             </div>
             
-            <!-- ===== ОБЛАСТЬ ФИЛЬТРОВ (БАЗОВЫЕ + РАСШИРЕННЫЕ) ===== -->
+            <!-- ===== ОБЛАСТЬ ФИЛЬТРОВ ===== -->
             <div class="filters-area" id="filtersArea">
                 <div class="filter-group">
                     <label>🏬 Магазин</label>
@@ -352,26 +345,24 @@
                     <div class="range-group">
                         <label>📅 Запас (дн) <span id="stockRangeLabel" class="range-value">0-999</span></label>
                         <div class="range-row">
-                            <span class="range-label-min">0</span>
-                            <input type="range" id="stockMinRange" min="0" max="999" value="0">
-                            <input type="range" id="stockMaxRange" min="0" max="999" value="999">
-                            <span class="range-label-max">999</span>
+                            <input type="number" id="stockMinInput" class="range-input" min="0" max="999" value="0" placeholder="от">
+                            <span class="range-sep">—</span>
+                            <input type="number" id="stockMaxInput" class="range-input" min="0" max="999" value="999" placeholder="до">
                         </div>
                     </div>
                     
                     <div class="range-group">
                         <label>📦 В пути (дн) <span id="transitRangeLabel" class="range-value">0-999</span></label>
                         <div class="range-row">
-                            <span class="range-label-min">0</span>
-                            <input type="range" id="transitMinRange" min="0" max="999" value="0">
-                            <input type="range" id="transitMaxRange" min="0" max="999" value="999">
-                            <span class="range-label-max">999</span>
+                            <input type="number" id="transitMinInput" class="range-input" min="0" max="999" value="0" placeholder="от">
+                            <span class="range-sep">—</span>
+                            <input type="number" id="transitMaxInput" class="range-input" min="0" max="999" value="999" placeholder="до">
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- ===== ОНЛАЙН-ПАНЕЛЬ ===== -->
+            <!-- ===== ОНЛАЙН-ПАНЕЛЬ (увеличенная) ===== -->
             <div id="onlinePanel" class="online-panel">
                 <label>✏️ Редактирование</label>
                 <div class="info-note" style="color:#1a5e1a;">Выберите подотдел для полного списка</div>
@@ -421,7 +412,6 @@
             </div>
             
             <div id="uploadSummary" class="upload-summary">📁 Загружено: 0 / 10 отчетов</div>
-            <div id="filterStats" class="stats-badge" style="display: none;"></div>
             <div id="statsInfo" class="stats-badge" style="display: none;"></div>
             <div id="loadingIndicator" style="display: none; background: #fff3e0; padding: 8px; border-radius: 10px; margin-bottom: 6px;">
                 <div class="loading-spinner"></div> <span id="loadingText">Обработка данных...</span>
@@ -445,6 +435,7 @@
     let DISPLAY_LIMIT = 200;
     let isOnlineMode = false;
     let editedRows = new Map();
+    let filterTimeout = null; // для debounce
     
     const BASE_COLUMNS = [
         "№ магазина","Артикул","Наименование","BEST гамма","BEST NEXT","Гамма","ТОП","LOC","Статус","CPQ",
@@ -1077,7 +1068,15 @@
         };
     }
 
-    // ==================== ФИЛЬТРАЦИЯ ====================
+    // ==================== ФИЛЬТРАЦИЯ С DEBOUNCE ====================
+    function debounceFilter() {
+        if (filterTimeout) clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(() => {
+            applyAllFilters();
+            filterTimeout = null;
+        }, 300);
+    }
+
     function applyAllFilters() {
         if (!calculatedResult.length) {
             filteredCalculatedResult = [];
@@ -1091,7 +1090,7 @@
         
         let result = [...calculatedResult];
         
-        // Базовые фильтры (всегда активны)
+        // Базовые фильтры
         if (storeFilter !== 'all') {
             result = result.filter(row => String(row["№ магазина"] || "") === storeFilter);
         }
@@ -1102,14 +1101,16 @@
             result = result.filter(row => String(row["Подотдел"] || "") === subdeptFilter);
         }
         
-        // Расширенные фильтры (только в онлайн-режиме)
+        // Расширенные фильтры (только онлайн)
         if (isOnlineMode) {
             const topFilter = document.getElementById('topFilter').value;
             const gammaFilter = document.getElementById('gammaFilter').value;
-            const stockMin = parseInt(document.getElementById('stockMinRange').value) || 0;
-            const stockMax = parseInt(document.getElementById('stockMaxRange').value) || 999;
-            const transitMin = parseInt(document.getElementById('transitMinRange').value) || 0;
-            const transitMax = parseInt(document.getElementById('transitMaxRange').value) || 999;
+            
+            // ПОЛЯ ВВОДА вместо ползунков
+            const stockMin = parseInt(document.getElementById('stockMinInput').value) || 0;
+            const stockMax = parseInt(document.getElementById('stockMaxInput').value) || 999;
+            const transitMin = parseInt(document.getElementById('transitMinInput').value) || 0;
+            const transitMax = parseInt(document.getElementById('transitMaxInput').value) || 999;
             
             if (topFilter !== 'all') {
                 result = result.filter(row => String(row["ТОП"] || "") === topFilter);
@@ -1117,14 +1118,20 @@
             if (gammaFilter !== 'all') {
                 result = result.filter(row => String(row["Гамма"] || "") === gammaFilter);
             }
-            result = result.filter(row => {
-                const days = toNumber(row["Запас, дн."], 999);
-                return days >= stockMin && days <= stockMax;
-            });
-            result = result.filter(row => {
-                const days = toNumber(row["В пути, дн."], 0);
-                return days >= transitMin && days <= transitMax;
-            });
+            
+            // Фильтры по дням с проверкой на валидность
+            if (stockMin <= stockMax) {
+                result = result.filter(row => {
+                    const days = toNumber(row["Запас, дн."], 999);
+                    return days >= stockMin && days <= stockMax;
+                });
+            }
+            if (transitMin <= transitMax) {
+                result = result.filter(row => {
+                    const days = toNumber(row["В пути, дн."], 0);
+                    return days >= transitMin && days <= transitMax;
+                });
+            }
         }
         
         // Фильтр по артикулам
@@ -1134,8 +1141,6 @@
         
         filteredCalculatedResult = result;
         renderFullTableWithFilter();
-        
-        // Убираем плашку "Найдено X из Y" — больше не показываем
     }
 
     // ==================== ОТРИСОВКА ТАБЛИЦЫ ====================
@@ -1653,14 +1658,14 @@
         }
     }
 
-    // ==================== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ РЕЙНДЖЕЙ ====================
+    // ==================== ОБНОВЛЕНИЕ МЕТОК ДЛЯ ПОЛЕЙ ВВОДА ====================
     function updateRangeLabels() {
-        const stockMin = document.getElementById('stockMinRange').value;
-        const stockMax = document.getElementById('stockMaxRange').value;
+        const stockMin = document.getElementById('stockMinInput').value || 0;
+        const stockMax = document.getElementById('stockMaxInput').value || 999;
         document.getElementById('stockRangeLabel').textContent = `${stockMin}-${stockMax}`;
         
-        const transitMin = document.getElementById('transitMinRange').value;
-        const transitMax = document.getElementById('transitMaxRange').value;
+        const transitMin = document.getElementById('transitMinInput').value || 0;
+        const transitMax = document.getElementById('transitMaxInput').value || 999;
         document.getElementById('transitRangeLabel').textContent = `${transitMin}-${transitMax}`;
     }
 
@@ -1730,25 +1735,26 @@
     document.getElementById("departmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     document.getElementById("subdepartmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     
-    // Расширенные фильтры (только в онлайн-режиме)
-    document.getElementById("topFilter")?.addEventListener("change", function() { applyAllFilters(); });
-    document.getElementById("gammaFilter")?.addEventListener("change", function() { applyAllFilters(); });
+    // Расширенные фильтры с DEBOUNCE
+    document.getElementById("topFilter")?.addEventListener("change", function() { debounceFilter(); });
+    document.getElementById("gammaFilter")?.addEventListener("change", function() { debounceFilter(); });
     
-    document.getElementById("stockMinRange")?.addEventListener("input", function() { 
+    // Поля ввода с DEBOUNCE
+    document.getElementById("stockMinInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        applyAllFilters(); 
+        debounceFilter(); 
     });
-    document.getElementById("stockMaxRange")?.addEventListener("input", function() { 
+    document.getElementById("stockMaxInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        applyAllFilters(); 
+        debounceFilter(); 
     });
-    document.getElementById("transitMinRange")?.addEventListener("input", function() { 
+    document.getElementById("transitMinInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        applyAllFilters(); 
+        debounceFilter(); 
     });
-    document.getElementById("transitMaxRange")?.addEventListener("input", function() { 
+    document.getElementById("transitMaxInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        applyAllFilters(); 
+        debounceFilter(); 
     });
     
     const toggleMainBtn = document.getElementById("toggleReportsCascadeBtn");
