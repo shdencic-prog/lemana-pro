@@ -7,6 +7,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
+        /* ... все стили без изменений ... */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
         body { background: #fef7e8; color: #1e1e1e; padding: 20px 24px; }
         .app-container { max-width: 1900px; margin: 0 auto; position: relative; }
@@ -66,7 +67,6 @@
         .report-link-item { display: block; padding: 4px 10px; margin: 4px 0; background: white; border-radius: 30px; text-decoration: none; color: #1e1e1e; font-size: 0.65rem; font-weight: 500; border-left: 4px solid #FF8C00; transition: 0.2s; }
         .report-link-item:hover { background: #FFE1B3; }
         
-        /* ===== ОБЛАСТЬ ФИЛЬТРОВ ===== */
         .filters-area { 
             background: #FFF3E0; 
             border-radius: 12px; 
@@ -110,7 +110,6 @@
         .filter-group select:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.2); }
         .filter-group select option { padding: 4px 8px; }
         
-        /* ===== РАСШИРЕННЫЕ ФИЛЬТРЫ ===== */
         .advanced-filters {
             display: none;
             padding-top: 10px;
@@ -124,7 +123,6 @@
         .filter-row-2col .filter-group label { font-size: 0.7rem; }
         .filter-row-2col .filter-group select { padding: 6px 10px; font-size: 0.7rem; }
         
-        /* ===== ПОЛЯ ВВОДА ДЛЯ ДНЕЙ (вместо ползунков) ===== */
         .range-group { margin-bottom: 8px; }
         .range-group label { font-weight: 700; display: block; margin-bottom: 3px; color: #4a2e00; font-size: 0.7rem; }
         .range-row { display: flex; align-items: center; gap: 6px; }
@@ -159,7 +157,6 @@
             margin-left: 6px;
         }
         
-        /* ===== ОНЛАЙН-ПАНЕЛЬ (увеличенная) ===== */
         .online-panel { 
             background: #e8f5e9; 
             border-radius: 10px; 
@@ -196,7 +193,6 @@
         .export-changes-btn { background: #1a5e1a; color: white; border: none; border-radius: 30px; padding: 4px 14px; font-size: 0.6rem; cursor: pointer; font-weight: bold; margin-top: 6px; }
         .export-changes-btn:hover { background: #0f4a0f; }
         
-        /* ===== ТАБЛИЦА ===== */
         .pivot-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #FFDCA8; background: #FFFFF5; max-height: 560px; overflow-y: auto; }
         .full-table { width: 100%; border-collapse: collapse; font-size: 0.65rem; min-width: 2200px; background-color: #ffffff; }
         .full-table th, .full-table td { border: 1px solid #d9c2a7; padding: 5px 4px; text-align: left; vertical-align: top; }
@@ -208,13 +204,10 @@
         .full-table td select { width: 100%; padding: 1px 4px; border: 1px solid #FFCF8A; border-radius: 4px; font-size: 0.6rem; background: white; }
         .full-table td input[type="number"] { width: 100%; padding: 1px 4px; border: 1px solid #FFCF8A; border-radius: 4px; font-size: 0.6rem; }
         
-        /* Цветовая подсветка Запас, дн. и В пути, дн. */
         .full-table td.stock-critical { background-color: #ffcdd2 !important; color: #b71c1c; font-weight: 700; }
         .full-table td.stock-warning { background-color: #ffccbc !important; color: #bf360c; font-weight: 600; }
         .full-table td.stock-attention { background-color: #fff9c4 !important; color: #f57f17; }
         .full-table td.stock-normal { background-color: #c8e6c9 !important; color: #1b5e20; }
-        
-        /* Подсветка наибольшего минимума */
         .full-table td.max-min-highlight {
             background-color: #fff3e0 !important;
             font-weight: 700;
@@ -255,10 +248,35 @@
         .search-buttons button:hover { background: #e07c00; }
         .article-list-preview { font-size: 9px; color: #666; margin-top: 4px; max-height: 40px; overflow-y: auto; }
         
-        /* Легенда цветов */
         .color-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; padding: 6px 10px; background: #f5f5f5; border-radius: 10px; font-size: 9px; align-items: center; }
         .legend-item { display: inline-flex; align-items: center; gap: 4px; }
         .legend-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #ddd; }
+        
+        /* Индикатор загрузки при фильтрации */
+        .filter-loading {
+            display: none;
+            background: #fff3e0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #e65100;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .filter-loading.active {
+            display: block;
+        }
+        .filter-loading .spinner-small {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #FF8C00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -314,7 +332,6 @@
                 </div>
             </div>
             
-            <!-- ===== ОБЛАСТЬ ФИЛЬТРОВ ===== -->
             <div class="filters-area" id="filtersArea">
                 <div class="filter-group">
                     <label>🏬 Магазин</label>
@@ -329,7 +346,6 @@
                     <select id="subdepartmentFilter"><option value="all">Все подотделы</option></select>
                 </div>
                 
-                <!-- ===== РАСШИРЕННЫЕ ФИЛЬТРЫ (только в онлайн-режиме) ===== -->
                 <div id="advancedFilters" class="advanced-filters">
                     <div class="filter-row-2col">
                         <div class="filter-group">
@@ -362,7 +378,6 @@
                 </div>
             </div>
             
-            <!-- ===== ОНЛАЙН-ПАНЕЛЬ (увеличенная) ===== -->
             <div id="onlinePanel" class="online-panel">
                 <label>✏️ Редактирование</label>
                 <div class="info-note" style="color:#1a5e1a;">Выберите подотдел для полного списка</div>
@@ -374,7 +389,6 @@
                 <div class="info-note" style="color:#1a5e1a;">Только изменённые строки</div>
             </div>
             
-            <!-- ===== ПОИСК ===== -->
             <div class="search-area" id="searchArea">
                 <div class="search-group">
                     <label>🔍 Поиск по артикулу</label>
@@ -401,7 +415,11 @@
                 </div>
             </div>
             
-            <!-- Легенда цветов -->
+            <!-- Индикатор загрузки при фильтрации -->
+            <div id="filterLoading" class="filter-loading">
+                <span class="spinner-small"></span> Применяем фильтры...
+            </div>
+            
             <div class="color-legend">
                 <span class="legend-item"><span class="legend-color" style="background:#ffcdd2;"></span> &lt;7 дн (критично)</span>
                 <span class="legend-item"><span class="legend-color" style="background:#ffccbc;"></span> 7-14 дн (внимание)</span>
@@ -435,7 +453,8 @@
     let DISPLAY_LIMIT = 200;
     let isOnlineMode = false;
     let editedRows = new Map();
-    let filterTimeout = null; // для debounce
+    let filterTimeout = null;
+    let isFiltering = false;
     
     const BASE_COLUMNS = [
         "№ магазина","Артикул","Наименование","BEST гамма","BEST NEXT","Гамма","ТОП","LOC","Статус","CPQ",
@@ -1068,82 +1087,94 @@
         };
     }
 
-    // ==================== ФИЛЬТРАЦИЯ С DEBOUNCE ====================
-    function debounceFilter() {
-        if (filterTimeout) clearTimeout(filterTimeout);
-        filterTimeout = setTimeout(() => {
-            applyAllFilters();
-            filterTimeout = null;
-        }, 300);
-    }
-
+    // ==================== ФИЛЬТРАЦИЯ ====================
     function applyAllFilters() {
-        if (!calculatedResult.length) {
+        if (!calculatedResult.length || isFiltering) {
             filteredCalculatedResult = [];
             renderFullTableWithFilter();
             return;
         }
         
-        const storeFilter = document.getElementById('storeFilter').value;
-        const deptFilter = document.getElementById('departmentFilter').value;
-        const subdeptFilter = document.getElementById('subdepartmentFilter').value;
+        // Показываем индикатор загрузки
+        const filterLoading = document.getElementById('filterLoading');
+        if (filterLoading) filterLoading.classList.add('active');
+        isFiltering = true;
         
-        let result = [...calculatedResult];
-        
-        // Базовые фильтры
-        if (storeFilter !== 'all') {
-            result = result.filter(row => String(row["№ магазина"] || "") === storeFilter);
-        }
-        if (deptFilter !== 'all') {
-            result = result.filter(row => String(row["Отдел"] || "") === deptFilter);
-        }
-        if (subdeptFilter !== 'all') {
-            result = result.filter(row => String(row["Подотдел"] || "") === subdeptFilter);
-        }
-        
-        // Расширенные фильтры (только онлайн)
-        if (isOnlineMode) {
-            const topFilter = document.getElementById('topFilter').value;
-            const gammaFilter = document.getElementById('gammaFilter').value;
-            
-            // ПОЛЯ ВВОДА вместо ползунков
-            const stockMin = parseInt(document.getElementById('stockMinInput').value) || 0;
-            const stockMax = parseInt(document.getElementById('stockMaxInput').value) || 999;
-            const transitMin = parseInt(document.getElementById('transitMinInput').value) || 0;
-            const transitMax = parseInt(document.getElementById('transitMaxInput').value) || 999;
-            
-            if (topFilter !== 'all') {
-                result = result.filter(row => String(row["ТОП"] || "") === topFilter);
+        // Используем setTimeout для разгрузки основного потока
+        setTimeout(() => {
+            try {
+                const storeFilter = document.getElementById('storeFilter').value;
+                const deptFilter = document.getElementById('departmentFilter').value;
+                const subdeptFilter = document.getElementById('subdepartmentFilter').value;
+                
+                let result = [...calculatedResult];
+                
+                // Базовые фильтры
+                if (storeFilter !== 'all') {
+                    result = result.filter(row => String(row["№ магазина"] || "") === storeFilter);
+                }
+                if (deptFilter !== 'all') {
+                    result = result.filter(row => String(row["Отдел"] || "") === deptFilter);
+                }
+                if (subdeptFilter !== 'all') {
+                    result = result.filter(row => String(row["Подотдел"] || "") === subdeptFilter);
+                }
+                
+                // Расширенные фильтры (только онлайн)
+                if (isOnlineMode) {
+                    const topFilter = document.getElementById('topFilter').value;
+                    const gammaFilter = document.getElementById('gammaFilter').value;
+                    
+                    const stockMin = parseInt(document.getElementById('stockMinInput').value) || 0;
+                    const stockMax = parseInt(document.getElementById('stockMaxInput').value) || 999;
+                    const transitMin = parseInt(document.getElementById('transitMinInput').value) || 0;
+                    const transitMax = parseInt(document.getElementById('transitMaxInput').value) || 999;
+                    
+                    if (topFilter !== 'all') {
+                        // Преобразуем ТОП к числу для сравнения (убираем .00)
+                        result = result.filter(row => {
+                            const topVal = String(row["ТОП"] || "").replace(/\.00$/, '');
+                            return topVal === topFilter;
+                        });
+                    }
+                    if (gammaFilter !== 'all') {
+                        result = result.filter(row => String(row["Гамма"] || "") === gammaFilter);
+                    }
+                    
+                    if (stockMin <= stockMax) {
+                        result = result.filter(row => {
+                            const days = toNumber(row["Запас, дн."], 999);
+                            return days >= stockMin && days <= stockMax;
+                        });
+                    }
+                    if (transitMin <= transitMax) {
+                        result = result.filter(row => {
+                            const days = toNumber(row["В пути, дн."], 0);
+                            return days >= transitMin && days <= transitMax;
+                        });
+                    }
+                }
+                
+                // Фильтр по артикулам
+                if (articleFilterList && articleFilterList.size > 0) {
+                    result = result.filter(row => articleFilterList.has(String(row["Артикул"] || "").trim()));
+                }
+                
+                filteredCalculatedResult = result;
+                renderFullTableWithFilter();
+            } catch (e) {
+                console.error('Ошибка при фильтрации:', e);
+                filteredCalculatedResult = [...calculatedResult];
+                renderFullTableWithFilter();
+            } finally {
+                isFiltering = false;
+                const filterLoading = document.getElementById('filterLoading');
+                if (filterLoading) filterLoading.classList.remove('active');
             }
-            if (gammaFilter !== 'all') {
-                result = result.filter(row => String(row["Гамма"] || "") === gammaFilter);
-            }
-            
-            // Фильтры по дням с проверкой на валидность
-            if (stockMin <= stockMax) {
-                result = result.filter(row => {
-                    const days = toNumber(row["Запас, дн."], 999);
-                    return days >= stockMin && days <= stockMax;
-                });
-            }
-            if (transitMin <= transitMax) {
-                result = result.filter(row => {
-                    const days = toNumber(row["В пути, дн."], 0);
-                    return days >= transitMin && days <= transitMax;
-                });
-            }
-        }
-        
-        // Фильтр по артикулам
-        if (articleFilterList && articleFilterList.size > 0) {
-            result = result.filter(row => articleFilterList.has(String(row["Артикул"] || "").trim()));
-        }
-        
-        filteredCalculatedResult = result;
-        renderFullTableWithFilter();
+        }, 10);
     }
 
-    // ==================== ОТРИСОВКА ТАБЛИЦЫ ====================
+    // ==================== ОТРИСОВКА ТАБЛИЦЫ (оптимизированная) ====================
     function renderFullTableWithFilter() {
         let dataToShow = filteredCalculatedResult.length ? filteredCalculatedResult : calculatedResult;
         
@@ -1182,7 +1213,9 @@
             return;
         }
         
-        tbody.innerHTML = '';
+        // Используем DocumentFragment для оптимизации
+        const fragment = document.createDocumentFragment();
+        
         for (const row of dataToShow) {
             const tr = document.createElement("tr");
             const rowKey = `${row["№ магазина"]}|${row["Артикул"]}`;
@@ -1251,7 +1284,6 @@
                     if (typeof value === 'number' && value !== 0) value = value.toFixed(2);
                     td.textContent = value;
                     
-                    // Подсветка для "Запас, дн." и "В пути, дн."
                     if (col === "Запас, дн.") {
                         const days = toNumber(value, 999);
                         td.classList.add(getStockColorClass(days));
@@ -1260,16 +1292,18 @@
                         const days = toNumber(value, 0);
                         td.classList.add(getStockColorClass(days));
                     }
-                    
-                    // Подсветка для "Наибольший резерв MIN"
                     if (col === "Наибольший резерв MIN" && value && value.includes("(")) {
                         td.classList.add('max-min-highlight');
                     }
                 }
                 tr.appendChild(td);
             });
-            tbody.appendChild(tr);
+            fragment.appendChild(tr);
         }
+        
+        // Очищаем и добавляем фрагмент
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
         
         const statsDiv = document.getElementById('statsInfo');
         if (statsDiv) {
@@ -1658,7 +1692,7 @@
         }
     }
 
-    // ==================== ОБНОВЛЕНИЕ МЕТОК ДЛЯ ПОЛЕЙ ВВОДА ====================
+    // ==================== ОБНОВЛЕНИЕ МЕТОК ====================
     function updateRangeLabels() {
         const stockMin = document.getElementById('stockMinInput').value || 0;
         const stockMax = document.getElementById('stockMaxInput').value || 999;
@@ -1730,31 +1764,30 @@
         if (e.key === 'Enter') applyArticleFilter();
     });
     
-    // Базовые фильтры (всегда активны)
+    // Базовые фильтры (пересчитывают всё)
     document.getElementById("storeFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     document.getElementById("departmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     document.getElementById("subdepartmentFilter")?.addEventListener("change", function() { computeSummaryAsync(); });
     
-    // Расширенные фильтры с DEBOUNCE
-    document.getElementById("topFilter")?.addEventListener("change", function() { debounceFilter(); });
-    document.getElementById("gammaFilter")?.addEventListener("change", function() { debounceFilter(); });
+    // Расширенные фильтры (только фильтрация)
+    document.getElementById("topFilter")?.addEventListener("change", function() { applyAllFilters(); });
+    document.getElementById("gammaFilter")?.addEventListener("change", function() { applyAllFilters(); });
     
-    // Поля ввода с DEBOUNCE
     document.getElementById("stockMinInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        debounceFilter(); 
+        applyAllFilters(); 
     });
     document.getElementById("stockMaxInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        debounceFilter(); 
+        applyAllFilters(); 
     });
     document.getElementById("transitMinInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        debounceFilter(); 
+        applyAllFilters(); 
     });
     document.getElementById("transitMaxInput")?.addEventListener("input", function() { 
         updateRangeLabels(); 
-        debounceFilter(); 
+        applyAllFilters(); 
     });
     
     const toggleMainBtn = document.getElementById("toggleReportsCascadeBtn");
