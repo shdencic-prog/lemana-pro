@@ -30,6 +30,7 @@
             --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
             --transition: 0.3s ease;
             --card-hover-transform: translateY(-4px);
+            --modal-overlay: rgba(0,0,0,0.6);
         }
 
         [data-theme="dark"] {
@@ -52,6 +53,7 @@
             --warning-bg: #3a2a1a;
             --danger-bg: #3a1a1a;
             --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            --modal-overlay: rgba(0,0,0,0.7);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
@@ -63,7 +65,7 @@
         .header h1 small { font-size: 0.75rem; background: rgba(0,0,0,0.2); padding: 4px 14px; border-radius: 40px; }
         .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         
-        .mode-toggle-btn, .theme-toggle-btn { padding: 6px 16px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+        .mode-toggle-btn, .theme-toggle-btn, .help-toggle-btn { padding: 6px 16px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
         .mode-toggle-btn.basic { background: #e0e0e0; color: #555; }
         .mode-toggle-btn.basic:hover { background: #d0d0d0; }
         .mode-toggle-btn.online { background: #2c5f2d; color: white; box-shadow: 0 0 15px rgba(44, 95, 45, 0.2); }
@@ -72,6 +74,9 @@
         
         .theme-toggle-btn { background: rgba(255,255,255,0.2); color: white; }
         .theme-toggle-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .help-toggle-btn { background: rgba(255,255,255,0.25); color: white; }
+        .help-toggle-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.02); }
         
         .mode-indicator { font-size: 0.7rem; padding: 4px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; transition: 0.3s; }
         .mode-indicator.basic-mode { background: #e0e0e0; color: #555; }
@@ -87,8 +92,193 @@
         .left-panel.collapsed { width: 0; padding: 0; margin: 0; opacity: 0; visibility: hidden; transform: translateX(-30px); }
         .right-panel { flex: 1; background: var(--bg-panel); border-radius: 16px; border: 1px solid var(--border-color); padding: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
         
-        .panel-controls { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+        .panel-controls { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
         .collapse-panel-btn { background: #FF8C00; border: none; border-radius: 40px; padding: 4px 12px; font-weight: bold; cursor: pointer; font-size: 0.7rem; color: #1e1e1e; }
+        
+        /* ===== Модальное окно инструкции ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--modal-overlay);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: var(--bg-panel);
+            border-radius: 20px;
+            max-width: 820px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px 35px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 2px solid var(--border-color);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-thumb { background: #FF8C00; border-radius: 4px; }
+        .modal-content::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 4px; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0 8px;
+            transition: 0.2s;
+            z-index: 10;
+            background: var(--bg-panel);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -10px;
+            margin-right: -10px;
+        }
+        .modal-close:hover { color: #e53935; transform: rotate(90deg); }
+        
+        .modal-content h2 {
+            font-size: 1.8rem;
+            color: #FF8C00;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-content .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        
+        .help-section {
+            margin-bottom: 18px;
+        }
+        .help-section h3 {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .help-section h3 .badge {
+            font-size: 0.55rem;
+            background: #FF8C00;
+            color: #1e1e1e;
+            padding: 1px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        .help-section p, .help-section li {
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .help-section ul {
+            list-style: none;
+            padding-left: 6px;
+        }
+        .help-section ul li {
+            padding: 3px 0 3px 24px;
+            position: relative;
+        }
+        .help-section ul li::before {
+            content: "▸";
+            position: absolute;
+            left: 4px;
+            color: #FF8C00;
+            font-weight: bold;
+        }
+        
+        .help-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 10px 0;
+        }
+        .help-grid .grid-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+        }
+        .help-grid .grid-item strong {
+            color: #FF8C00;
+            display: block;
+            font-size: 0.8rem;
+        }
+        .help-grid .grid-item span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .legend-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .legend-grid .lg-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            background: var(--bg-card);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+        }
+        .legend-grid .lg-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .hotkeys-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            margin: 6px 0;
+        }
+        .hotkeys-table td {
+            padding: 4px 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .hotkeys-table td:first-child {
+            font-weight: 700;
+            color: #FF8C00;
+            width: 80px;
+        }
         
         .btn-auto-load { padding: 8px 16px; font-size: 0.75rem; background: #2c5f2d; color: white; width: 100%; margin-bottom: 10px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-auto-load:hover { background: #1f4520; }
@@ -696,6 +886,9 @@
             .left-panel.collapsed { width: 0; padding: 0; margin: 0; }
             .analytics-grid { grid-template-columns: repeat(2, 1fr); }
             .header h1 { font-size: 1.2rem; }
+            .help-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 20px 18px; }
+            .modal-content h2 { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -704,12 +897,138 @@
     <div class="header">
         <h1>📊 ЛЕМАНА ПРО <small>Анализ резервов</small></h1>
         <div class="header-controls">
+            <button id="helpToggleBtn" class="help-toggle-btn">❓ Инструкция</button>
             <button id="themeToggleBtn" class="theme-toggle-btn">🌙 Тёмная</button>
             <span id="modeIndicator" class="mode-indicator basic-mode">
                 <span class="indicator-dot"></span> Базовый
             </span>
             <button id="toggleModeBtn" class="mode-toggle-btn basic">🔄 Онлайн-редактор</button>
             <button id="expandPanelBtnGlobal" class="global-expand-btn">▶ Панель</button>
+        </div>
+    </div>
+
+    <!-- ===== Модальное окно инструкции ===== -->
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="helpModalClose" class="modal-close">✕</button>
+            
+            <h2>📊 ЛЕМАНА ПРО</h2>
+            <div class="subtitle">Сводный аналитический инструмент</div>
+            
+            <div class="help-section">
+                <h3>🎯 Что это?</h3>
+                <p>Инструмент для анализа товарных запасов, который объединяет данные из 10+ отчетов в единую сводную таблицу с возможностью редактирования, фильтрации и выгрузки.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>🚀 Как это работает?</h3>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">1. 📁 Загрузка данных</strong>
+                    <ul>
+                        <li>Нажмите <strong>"Загрузить все отчеты из папки"</strong> — система сама найдет и загрузит все нужные файлы</li>
+                        <li>Или загружайте отчеты по одному через меню <strong>"Загрузить Excel-отчеты"</strong></li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">2. 🧮 Расчет сводной таблицы</strong>
+                    <ul>
+                        <li>Нажмите <strong>"ВЫЧИСЛИТЬ"</strong> — и все данные объединятся в одну таблицу</li>
+                        <li>Система автоматически: рассчитывает запас в днях, определяет критические позиции (&lt;7 дней), выделяет УТО-позиции, отмечает Бест-товары, показывает товары в пути</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">3. 🔍 Фильтрация</strong>
+                    <ul>
+                        <li>По магазину, отделу, подотделу</li>
+                        <li>По диапазону дней (запас, в пути)</li>
+                        <li>По ТОП (1, 2, 0)</li>
+                        <li>Поиск по артикулу и наименованию</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">4. ✏️ Редактирование (онлайн-режим)</strong>
+                    <ul>
+                        <li>Включается кнопкой <strong>"Онлайн-редактор"</strong></li>
+                        <li>Можно менять <strong>"Вид минимума"</strong> и <strong>"Кол-во проектов"</strong></li>
+                        <li>Изменения сохраняются и выгружаются в специальный файл</li>
+                        <li><kbd>Ctrl+Z</kbd> — отмена последнего действия</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">5. 📊 Аналитика</strong>
+                    <ul>
+                        <li>Переключитесь на вкладку <strong>"Аналитика"</strong></li>
+                        <li>Вы увидите количество товаров по категориям (критический запас, УТО, Бест и т.д.)</li>
+                        <li><strong>Кликабельные карточки</strong> — нажмите на любую, и выгрузится список товаров</li>
+                        <li>Топ-10 проблемных товаров и сводку по магазинам</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">6. ⬇️ Выгрузка</strong>
+                    <ul>
+                        <li><strong>"ВЫГРУЗИТЬ ВСЕ"</strong> — полная сводная таблица в Excel</li>
+                        <li><strong>"ВЫГРУЗИТЬ MIN Custom"</strong> — только измененные позиции для поставщиков</li>
+                        <li>Из аналитики — выгрузка ТОП-10 или ВСЕХ товаров по категории</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>🎨 Визуальные подсказки</h3>
+                <div class="legend-grid">
+                    <div class="lg-item"><span class="lg-color" style="background:#e53935;"></span> Запас &lt; 7 дней (критично)</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#fb8c00;"></span> Запас 7-14 дней (внимание)</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#fdd835;"></span> Запас 14-22 дня (норма)</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#43a047;"></span> Запас &gt; 22 дня (хорошо)</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#7b1fa2;"></span> УТО-позиции</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#f9a825;"></span> Бест-позиции</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#1e88e5;"></span> Товары в пути</div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>⌨️ Горячие клавиши</h3>
+                <table class="hotkeys-table">
+                    <tr><td><kbd>F1</kbd></td><td>Переключиться на вкладку "Аналитика"</td></tr>
+                    <tr><td><kbd>F2</kbd></td><td>Переключиться на вкладку "Таблица"</td></tr>
+                    <tr><td><kbd>F5</kbd></td><td>Обновить аналитику</td></tr>
+                    <tr><td><kbd>Ctrl+Z</kbd></td><td>Отменить последнее действие</td></tr>
+                </table>
+            </div>
+
+            <div class="help-section">
+                <h3>💡 Пример рабочего процесса</h3>
+                <ul>
+                    <li>Загружаете отчеты из папки (или вручную)</li>
+                    <li>Нажимаете <strong>"ВЫЧИСЛИТЬ"</strong> — получаете сводную таблицу</li>
+                    <li>Фильтруете по нужному магазину или отделу</li>
+                    <li>Переходите в <strong>"Аналитику"</strong> — видите проблемные зоны</li>
+                    <li>Редактируете минимумы в онлайн-режиме</li>
+                    <li>Выгружаете изменения для поставщиков</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>❓ Частые вопросы</h3>
+                <ul>
+                    <li><strong>Нужно ли устанавливать что-то на компьютер?</strong> — Нет, это веб-приложение — открываете в браузере и работаете.</li>
+                    <li><strong>Какие браузеры поддерживаются?</strong> — Chrome, Edge, Opera (рекомендуем последние версии).</li>
+                    <li><strong>Что делать, если отчет не загружается?</strong> — Проверьте, что файл имеет формат .xlsx или .xls, и он не открыт в другой программе.</li>
+                    <li><strong>Сохраняются ли мои изменения после обновления страницы?</strong> — Да, все изменения сохраняются в браузере.</li>
+                    <li><strong>Можно ли работать с инструментом на телефоне/планшете?</strong> — Да, интерфейс адаптивный.</li>
+                </ul>
+            </div>
+
+            <div class="help-section" style="margin-bottom:0;">
+                <h3>📝 Для связи</h3>
+                <p>По всем вопросам и предложениям — <a href="https://connect.lemanapro.ru/net_home/people/36702?tab=Feed" target="_blank" style="color:#FF8C00;font-weight:bold;">ссылка в коннект</a></p>
+            </div>
         </div>
     </div>
 
@@ -724,6 +1043,7 @@
     <div class="dashboard-flex">
         <div id="leftPanel" class="left-panel">
             <div class="panel-controls">
+                <span style="font-size:0.7rem;font-weight:600;color:var(--text-secondary);">📌 Управление</span>
                 <button id="collapsePanelBtn" class="collapse-panel-btn">◀ Свернуть</button>
             </div>
             
@@ -1045,6 +1365,18 @@ function showToast(message, type = 'info', duration = 3000) {
             setTimeout(() => toast.remove(), 300);
         }
     }, duration);
+}
+
+// ==================== Управление модальным окном инструкции ====================
+function toggleHelpModal(show) {
+    const modal = document.getElementById('helpModal');
+    if (show === undefined) {
+        modal.classList.toggle('show');
+    } else if (show) {
+        modal.classList.add('show');
+    } else {
+        modal.classList.remove('show');
+    }
 }
 
 // ==================== Управление уведомлениями ====================
@@ -3450,6 +3782,37 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('alertToggleBtn').style.background = 'rgba(255,255,255,0.3)';
     }
     
+    // ===== Инструкция =====
+    document.getElementById('helpToggleBtn').addEventListener('click', () => toggleHelpModal(true));
+    document.getElementById('helpModalClose').addEventListener('click', () => toggleHelpModal(false));
+    document.getElementById('helpModal').addEventListener('click', function(e) {
+        if (e.target === this) toggleHelpModal(false);
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') toggleHelpModal(false);
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+            e.preventDefault();
+            undoEdit();
+        }
+        if (e.key === 'F1') {
+            e.preventDefault();
+            switchTab('analytics');
+            showToast('📊 Переключено на вкладку "Аналитика"', 'info');
+        }
+        if (e.key === 'F2') {
+            e.preventDefault();
+            switchTab('table');
+            showToast('📋 Переключено на вкладку "Таблица"', 'info');
+        }
+        if (e.key === 'F5' && !e.ctrlKey) {
+            e.preventDefault();
+            if (cachedData.fullData.length) {
+                updateAnalytics(filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData);
+                showToast('🔄 Аналитика обновлена', 'info');
+            }
+        }
+    });
+    
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             switchTab(this.dataset.tab);
@@ -3562,30 +3925,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.toggleAlerts = toggleAlerts;
     window.exportCardData = exportCardData;
     
-    document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-            e.preventDefault();
-            undoEdit();
-        }
-        if (e.key === 'F1') {
-            e.preventDefault();
-            switchTab('analytics');
-            showToast('📊 Переключено на вкладку "Аналитика"', 'info');
-        }
-        if (e.key === 'F2') {
-            e.preventDefault();
-            switchTab('table');
-            showToast('📋 Переключено на вкладку "Таблица"', 'info');
-        }
-        if (e.key === 'F5' && !e.ctrlKey) {
-            e.preventDefault();
-            if (cachedData.fullData.length) {
-                updateAnalytics(filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData);
-                showToast('🔄 Аналитика обновлена', 'info');
-            }
-        }
-    });
-    
     if (appState.leftPanelCollapsed) {
         leftPanel.classList.add('collapsed');
     }
@@ -3617,6 +3956,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🖱️ Клик на карточку - выгрузка всех артикулов категории');
     console.log('🔕 Отключение уведомлений при смене фильтров');
     console.log('⌨️ F1 - Аналитика, F2 - Таблица, F5 - Обновить аналитику');
+    console.log('❓ Кнопка "Инструкция" для быстрого ознакомления');
 });
 </script>
 </body>
