@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -7,21 +7,71 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
+        /* ===== CSS Переменные для тем ===== */
+        :root {
+            --bg-primary: #fef7e8;
+            --bg-secondary: #ffffff;
+            --bg-panel: #ffffff;
+            --bg-card: #f5f5f5;
+            --bg-header: linear-gradient(135deg, #FF8C00 0%, #FFB347 100%);
+            --text-primary: #1e1e1e;
+            --text-secondary: #4a2e00;
+            --text-muted: #666;
+            --border-color: #ffdd99;
+            --border-light: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.1);
+            --table-stripe: #fef8ef;
+            --table-hover: #ffefdb;
+            --input-bg: #ffffff;
+            --input-border: #FFCF8A;
+            --success-bg: #e8f5e9;
+            --warning-bg: #fff3e0;
+            --danger-bg: #ffebee;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --transition: 0.3s ease;
+            --card-hover-transform: translateY(-4px);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-panel: #1a1a2e;
+            --bg-card: #2a2a4a;
+            --bg-header: linear-gradient(135deg, #1a1a3e 0%, #2d2d5e 100%);
+            --text-primary: #e0e0e0;
+            --text-secondary: #ffb74d;
+            --text-muted: #aaa;
+            --border-color: #3d3d6e;
+            --border-light: #333355;
+            --shadow-color: rgba(0,0,0,0.4);
+            --table-stripe: #1e1e3e;
+            --table-hover: #2a2a5a;
+            --input-bg: #2a2a4a;
+            --input-border: #4a4a7a;
+            --success-bg: #1a3a1a;
+            --warning-bg: #3a2a1a;
+            --danger-bg: #3a1a1a;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
-        body { background: #fef7e8; color: #1e1e1e; padding: 20px 24px; }
+        body { background: var(--bg-primary); color: var(--text-primary); padding: 20px 24px; transition: background var(--transition), color var(--transition); }
         .app-container { max-width: 1900px; margin: 0 auto; position: relative; }
         
-        .header { background: linear-gradient(135deg, #FF8C00 0%, #FFB347 100%); border-bottom: 6px solid #000000; border-radius: 20px 20px 0 0; padding: 12px 28px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header { background: var(--bg-header); border-bottom: 6px solid #000000; border-radius: 20px 20px 0 0; padding: 12px 28px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; color: white; }
         .header h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .header h1 small { font-size: 0.75rem; background: rgba(0,0,0,0.1); padding: 4px 14px; border-radius: 40px; }
+        .header h1 small { font-size: 0.75rem; background: rgba(0,0,0,0.2); padding: 4px 14px; border-radius: 40px; }
         .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         
-        .mode-toggle-btn { padding: 6px 16px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+        .mode-toggle-btn, .theme-toggle-btn { padding: 6px 16px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
         .mode-toggle-btn.basic { background: #e0e0e0; color: #555; }
         .mode-toggle-btn.basic:hover { background: #d0d0d0; }
         .mode-toggle-btn.online { background: #2c5f2d; color: white; box-shadow: 0 0 15px rgba(44, 95, 45, 0.2); }
         .mode-toggle-btn.online:hover { background: #1f4520; transform: scale(1.02); }
         .mode-toggle-btn.active { box-shadow: 0 0 0 2px #000; }
+        
+        .theme-toggle-btn { background: rgba(255,255,255,0.2); color: white; }
+        .theme-toggle-btn:hover { background: rgba(255,255,255,0.3); }
         
         .mode-indicator { font-size: 0.7rem; padding: 4px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; transition: 0.3s; }
         .mode-indicator.basic-mode { background: #e0e0e0; color: #555; }
@@ -33,15 +83,246 @@
         .global-expand-btn:hover { background: #FF8C00; color: #1e1e1e; }
         
         .dashboard-flex { display: flex; gap: 20px; transition: all 0.3s ease; }
-        .left-panel { width: 340px; flex-shrink: 0; background: #ffffff; border-radius: 12px; border: 1px solid #ffdd99; padding: 16px; transition: all 0.3s; overflow-x: hidden; }
+        .left-panel { width: 340px; flex-shrink: 0; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border-color); padding: 16px; transition: all 0.3s; overflow-x: hidden; }
         .left-panel.collapsed { width: 0; padding: 0; margin: 0; opacity: 0; visibility: hidden; transform: translateX(-30px); }
-        .right-panel { flex: 1; background: #ffffff; border-radius: 16px; border: 1px solid #ffdd99; padding: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+        .right-panel { flex: 1; background: var(--bg-panel); border-radius: 16px; border: 1px solid var(--border-color); padding: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
         
         .panel-controls { display: flex; justify-content: flex-end; margin-bottom: 8px; }
         .collapse-panel-btn { background: #FF8C00; border: none; border-radius: 40px; padding: 4px 12px; font-weight: bold; cursor: pointer; font-size: 0.7rem; color: #1e1e1e; }
         
         .btn-auto-load { padding: 8px 16px; font-size: 0.75rem; background: #2c5f2d; color: white; width: 100%; margin-bottom: 10px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-auto-load:hover { background: #1f4520; }
+        
+        /* ===== Вкладки ===== */
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 20px 20px 0 0;
+            transition: 0.2s;
+            position: relative;
+        }
+        .tab-btn:hover { background: var(--bg-card); color: var(--text-primary); }
+        .tab-btn.active { color: #FF8C00; background: var(--bg-card); }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 20%; right: 20%; height: 3px; background: #FF8C00; border-radius: 3px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* ===== Аналитика ===== */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-light);
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .stat-card:hover {
+            transform: var(--card-hover-transform);
+            box-shadow: var(--card-shadow);
+            border-color: #FF8C00;
+        }
+        .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; color: #FF8C00; }
+        .stat-card .stat-label { font-size: 0.55rem; color: var(--text-muted); margin-top: 4px; }
+        .stat-card .stat-sub { font-size: 0.5rem; color: var(--text-muted); margin-top: 2px; }
+        .stat-card .stat-hint {
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-size: 0.4rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+            transition: 0.2s;
+        }
+        .stat-card:hover .stat-hint { opacity: 1; color: #FF8C00; }
+        .stat-card.danger .stat-value { color: #e53935; }
+        .stat-card.warning .stat-value { color: #fb8c00; }
+        .stat-card.success .stat-value { color: #43a047; }
+        .stat-card.info .stat-value { color: #1e88e5; }
+        .stat-card.purple .stat-value { color: #7b1fa2; }
+        .stat-card.gold .stat-value { color: #f9a825; }
+        
+        .analytics-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-light);
+        }
+        .analytics-section h4 {
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .analytics-section h4 .section-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .analytics-section h4 .btn-export-all {
+            background: #2c5f2d;
+            border: none;
+            border-radius: 20px;
+            padding: 3px 14px;
+            font-size: 0.55rem;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .analytics-section h4 .btn-export-all:hover { background: #1f4520; transform: scale(1.02); }
+        .analytics-section h4 .btn-export-top {
+            background: #FF8C00;
+            border: none;
+            border-radius: 20px;
+            padding: 3px 14px;
+            font-size: 0.55rem;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .analytics-section h4 .btn-export-top:hover { background: #e07c00; transform: scale(1.02); }
+        
+        .top-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.6rem;
+        }
+        .top-table th, .top-table td {
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--border-light);
+            text-align: left;
+        }
+        .top-table th {
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 2;
+        }
+        .top-table tr:hover td { background: var(--table-hover); }
+        .top-table .rank { font-weight: 700; color: #FF8C00; width: 25px; }
+        .top-table .badge-critical { background: #e53935; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-warning { background: #fb8c00; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-uto { background: #7b1fa2; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-success { background: #43a047; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-transit { background: #1e88e5; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-in-transit { background: #43a047; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-no-transit { background: #e53935; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-best { background: #f9a825; color: #1e1e1e; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .badge-min { background: #e65100; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.5rem; }
+        .top-table .export-btn {
+            background: #FF8C00;
+            border: none;
+            border-radius: 12px;
+            padding: 2px 10px;
+            font-size: 0.5rem;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .top-table .export-btn:hover { background: #e07c00; }
+        
+        .top-table-wrapper {
+            max-height: 300px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .top-table-wrapper::-webkit-scrollbar { width: 4px; }
+        .top-table-wrapper::-webkit-scrollbar-thumb { background: #FF8C00; border-radius: 4px; }
+        .top-table-wrapper::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 4px; }
+        
+        .mini-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 30px;
+            gap: 2px;
+            padding: 2px 0;
+        }
+        .mini-chart .bar {
+            flex: 1;
+            background: #FF8C00;
+            border-radius: 2px 2px 0 0;
+            min-height: 2px;
+            transition: 0.3s;
+            position: relative;
+        }
+        .mini-chart .bar:hover { opacity: 0.8; }
+        .mini-chart .bar .bar-label {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.4rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        
+        .search-group-dual { display: flex; gap: 6px; }
+        .search-group-dual input { flex: 1; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-primary); font-size: 0.7rem; }
+        .search-group-dual input:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.2); }
+        
+        .alert-banner {
+            background: #e53935;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            animation: slideDown 0.3s ease;
+        }
+        .alert-banner.show { display: flex; }
+        .alert-banner .alert-close { cursor: pointer; font-weight: bold; opacity: 0.8; padding: 0 8px; }
+        .alert-banner .alert-close:hover { opacity: 1; }
+        .alert-banner .alert-count { background: rgba(255,255,255,0.2); padding: 2px 12px; border-radius: 20px; font-weight: bold; }
+        .alert-banner .alert-toggle {
+            cursor: pointer;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            font-size: 0.6rem;
+            border: none;
+            color: white;
+            transition: 0.2s;
+        }
+        .alert-banner .alert-toggle:hover { background: rgba(255,255,255,0.25); }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         
         .main-upload-btn, .btn-load-excel, .btn-excel-export, .secondary-btn, .btn-compute { background: #FF8C00; color: #1e1e1e; transition: 0.2s; border: none; cursor: pointer; font-weight: bold; border-radius: 40px; }
         .main-upload-btn:hover, .btn-load-excel:hover, .btn-excel-export:hover, .secondary-btn:hover, .btn-compute:hover { background: #e07c00; }
@@ -66,37 +347,29 @@
             width: 100%;
             margin-top: 8px;
         }
-        .btn-reset-changes:hover {
-            background: #b71c1c;
-            transform: scale(1.02);
-        }
-        .btn-reset-changes:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .btn-reset-changes:hover { background: #b71c1c; transform: scale(1.02); }
         
-        .reports-cascade-list { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; background: #FFF7E6; border-radius: 12px; margin-top: 8px; }
-        .reports-cascade-list.open { max-height: 600px; padding: 10px; border: 1px solid #FFCF8A; }
-        .cascade-report-item { background: white; margin: 4px 0; border-radius: 30px; border-left: 4px solid #FF8C00; }
+        .reports-cascade-list { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; background: var(--bg-card); border-radius: 12px; margin-top: 8px; }
+        .reports-cascade-list.open { max-height: 600px; padding: 10px; border: 1px solid var(--border-color); }
+        .cascade-report-item { background: var(--bg-panel); margin: 4px 0; border-radius: 30px; border-left: 4px solid #FF8C00; }
         .cascade-header { display: flex; justify-content: space-between; padding: 6px 12px; cursor: pointer; font-weight: 600; align-items: center; font-size: 0.75rem; }
-        .cascade-header:hover { background: #fff0db; }
-        .cascade-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #fefaf2; border-radius: 0 0 16px 16px; }
-        .cascade-report-item.active-cascade .cascade-content { max-height: 80px; padding: 6px 10px; border-top: 1px solid #ffe0b5; }
+        .cascade-header:hover { background: var(--table-hover); }
+        .cascade-content { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: var(--bg-card); border-radius: 0 0 16px 16px; }
+        .cascade-report-item.active-cascade .cascade-content { max-height: 80px; padding: 6px 10px; border-top: 1px solid var(--border-color); }
         .upload-status { display: inline-flex; align-items: center; margin-left: 6px; font-size: 12px; }
-        .links-cascade { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; background: #FFF7E6; border-radius: 12px; margin-top: 8px; }
-        .links-cascade.open { max-height: 500px; padding: 10px; border: 1px solid #FFCF8A; }
-        .report-link-item { display: block; padding: 4px 10px; margin: 4px 0; background: white; border-radius: 30px; text-decoration: none; color: #1e1e1e; font-size: 0.65rem; font-weight: 500; border-left: 4px solid #FF8C00; transition: 0.2s; }
-        .report-link-item:hover { background: #FFE1B3; }
+        .links-cascade { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; background: var(--bg-card); border-radius: 12px; margin-top: 8px; }
+        .links-cascade.open { max-height: 500px; padding: 10px; border: 1px solid var(--border-color); }
+        .report-link-item { display: block; padding: 4px 10px; margin: 4px 0; background: var(--bg-panel); border-radius: 30px; text-decoration: none; color: var(--text-primary); font-size: 0.65rem; font-weight: 500; border-left: 4px solid #FF8C00; transition: 0.2s; }
+        .report-link-item:hover { background: var(--table-hover); }
         
         .filters-area { 
-            background: #FFF3E0; 
+            background: var(--bg-card); 
             border-radius: 12px; 
             padding: 14px 16px; 
             margin: 10px 0; 
             transition: all 0.3s; 
-            border: 1px solid #ffdd99;
-            max-height: 400px;
+            border: 1px solid var(--border-color);
+            max-height: 500px;
             overflow-y: auto;
             scroll-behavior: smooth;
             min-height: 140px;
@@ -104,13 +377,12 @@
         }
         .filters-area::-webkit-scrollbar { width: 5px; }
         .filters-area::-webkit-scrollbar-thumb { background: #FF8C00; border-radius: 4px; }
-        .filters-area::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 4px; }
-        .filters-area::after { content: "↕"; position: absolute; bottom: 2px; right: 8px; font-size: 12px; color: #ccc; pointer-events: none; }
+        .filters-area::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 4px; }
         
         .filter-group { margin-bottom: 10px; }
-        .filter-group label { font-weight: 700; display: block; margin-bottom: 4px; color: #4a2e00; font-size: 0.75rem; }
+        .filter-group label { font-weight: 700; display: block; margin-bottom: 4px; color: var(--text-secondary); font-size: 0.75rem; }
         .filter-group select { 
-            width: 100%; padding: 8px 12px; border-radius: 30px; border: 1px solid #FFCF8A; background: white; cursor: pointer; font-size: 0.75rem; transition: 0.2s;
+            width: 100%; padding: 8px 12px; border-radius: 30px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-primary); cursor: pointer; font-size: 0.75rem; transition: 0.2s;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF8C00' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -119,9 +391,8 @@
         }
         .filter-group select:hover { border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.1); }
         .filter-group select:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.2); }
-        .filter-group select option { padding: 4px 8px; }
         
-        .advanced-filters { display: none; padding-top: 10px; border-top: 2px dashed #FFCF8A; margin-top: 6px; }
+        .advanced-filters { display: none; padding-top: 10px; border-top: 2px dashed var(--border-color); margin-top: 6px; }
         .advanced-filters.show { display: block; }
         
         .filter-row-2col { display: flex; gap: 10px; }
@@ -130,16 +401,15 @@
         .filter-row-2col .filter-group select { padding: 6px 10px; font-size: 0.7rem; }
         
         .range-group { margin-bottom: 8px; }
-        .range-group label { font-weight: 700; display: block; margin-bottom: 3px; color: #4a2e00; font-size: 0.7rem; }
+        .range-group label { font-weight: 700; display: block; margin-bottom: 3px; color: var(--text-secondary); font-size: 0.7rem; }
         .range-row { display: flex; align-items: center; gap: 6px; }
-        .range-input { width: 55px; padding: 4px 6px; border-radius: 20px; border: 1px solid #FFCF8A; text-align: center; font-size: 0.7rem; background: white; transition: 0.2s; }
+        .range-input { width: 55px; padding: 4px 6px; border-radius: 20px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-primary); text-align: center; font-size: 0.7rem; transition: 0.2s; }
         .range-input:focus { outline: none; border-color: #FF8C00; box-shadow: 0 0 0 3px rgba(255,140,0,0.2); }
-        .range-input:hover { border-color: #FF8C00; }
-        .range-sep { font-size: 0.6rem; color: #999; }
-        .range-value { min-width: 40px; text-align: center; font-size: 0.6rem; font-weight: 700; color: #4a2e00; background: white; padding: 1px 6px; border-radius: 10px; border: 1px solid #FFCF8A; display: inline-block; margin-left: 6px; }
+        .range-sep { font-size: 0.6rem; color: var(--text-muted); }
+        .range-value { min-width: 40px; text-align: center; font-size: 0.6rem; font-weight: 700; color: var(--text-secondary); background: var(--bg-panel); padding: 1px 6px; border-radius: 10px; border: 1px solid var(--border-color); display: inline-block; margin-left: 6px; }
         
         .online-panel { 
-            background: #e8f5e9; 
+            background: var(--success-bg); 
             border-radius: 10px; 
             padding: 12px 16px; 
             margin-top: 6px; 
@@ -151,11 +421,7 @@
             position: relative;
             transition: 0.3s;
         }
-        .online-panel::-webkit-scrollbar { width: 5px; }
-        .online-panel::-webkit-scrollbar-thumb { background: #2c5f2d; border-radius: 4px; }
-        .online-panel::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 4px; }
-        .online-panel::after { content: "↕"; position: absolute; bottom: 2px; right: 8px; font-size: 12px; color: #2c5f2d; pointer-events: none; opacity: 0.5; }
-        .online-panel label { font-weight: 700; font-size: 0.7rem; color: #1e1e1e; }
+        .online-panel label { font-weight: 700; font-size: 0.7rem; color: var(--text-primary); }
         .online-panel .info-note { color: #1a5e1a; font-size: 0.55rem; }
         
         .quick-filter-buttons {
@@ -168,22 +434,15 @@
             padding: 4px 14px;
             border-radius: 20px;
             border: 2px solid #2c5f2d;
-            background: white;
+            background: var(--bg-panel);
             font-size: 0.6rem;
             cursor: pointer;
             transition: 0.2s;
             font-weight: 600;
             color: #2c5f2d;
         }
-        .quick-filter-btn:hover {
-            background: #e8f5e9;
-            transform: scale(1.02);
-        }
-        .quick-filter-btn.active {
-            background: #2c5f2d;
-            color: white;
-            box-shadow: 0 0 10px rgba(44, 95, 45, 0.3);
-        }
+        .quick-filter-btn:hover { background: var(--success-bg); transform: scale(1.02); }
+        .quick-filter-btn.active { background: #2c5f2d; color: white; box-shadow: 0 0 10px rgba(44, 95, 45, 0.3); }
         .quick-filter-btn.uto-active { border-color: #7b1fa2; color: #7b1fa2; }
         .quick-filter-btn.uto-active.active { background: #7b1fa2; color: white; border-color: #7b1fa2; }
         .quick-filter-btn.best-active { border-color: #f9a825; color: #f9a825; }
@@ -191,15 +450,10 @@
         .quick-filter-btn.min-active { border-color: #e65100; color: #e65100; }
         .quick-filter-btn.min-active.active { background: #e65100; color: white; border-color: #e65100; }
         
-        .quick-filter-status {
-            font-size: 0.5rem;
-            color: #1a5e1a;
-            margin-top: 2px;
-            text-align: center;
-        }
+        .quick-filter-status { font-size: 0.5rem; color: #1a5e1a; margin-top: 2px; text-align: center; }
         
         .column-toggle-group { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; max-height: 80px; overflow-y: auto; }
-        .column-toggle-item { display: flex; align-items: center; gap: 3px; font-size: 0.5rem; background: white; padding: 1px 6px; border-radius: 10px; border: 1px solid #ccc; }
+        .column-toggle-item { display: flex; align-items: center; gap: 3px; font-size: 0.5rem; background: var(--bg-panel); padding: 1px 6px; border-radius: 10px; border: 1px solid var(--border-light); color: var(--text-primary); }
         .column-toggle-item input[type="checkbox"] { width: 10px; height: 10px; cursor: pointer; }
         .export-changes-btn { background: #1a5e1a; color: white; border: none; border-radius: 30px; padding: 4px 14px; font-size: 0.6rem; cursor: pointer; font-weight: bold; margin-top: 6px; }
         .export-changes-btn:hover { background: #0f4a0f; }
@@ -207,8 +461,8 @@
         .pivot-wrapper { 
             overflow-x: auto; 
             border-radius: 12px; 
-            border: 1px solid #FFDCA8; 
-            background: #FFFFF5; 
+            border: 1px solid var(--border-color); 
+            background: var(--bg-panel); 
             max-height: 560px; 
             overflow-y: auto; 
             position: relative;
@@ -218,10 +472,10 @@
             border-collapse: collapse; 
             font-size: 0.65rem; 
             min-width: 2200px; 
-            background-color: #ffffff; 
+            background-color: var(--bg-panel); 
         }
         .full-table th, .full-table td { 
-            border: 1px solid #d9c2a7; 
+            border: 1px solid var(--border-color); 
             padding: 5px 4px; 
             text-align: left; 
             vertical-align: top; 
@@ -247,39 +501,25 @@
             position: sticky;
             left: 0;
             z-index: 5;
-            background: white;
+            background: var(--bg-panel);
         }
-        .full-table tbody tr:nth-child(even) td { background-color: #fef8ef; }
+        .full-table tbody tr:nth-child(even) td { background-color: var(--table-stripe); }
         .full-table tbody tr:nth-child(even) td:first-child,
-        .full-table tbody tr:nth-child(even) td:nth-child(2) { background-color: #fef8ef; }
+        .full-table tbody tr:nth-child(even) td:nth-child(2) { background-color: var(--table-stripe); }
         
-        .full-table tbody tr:hover td { background-color: #ffefdb; }
+        .full-table tbody tr:hover td { background-color: var(--table-hover); }
         .full-table tbody tr:hover td:first-child,
-        .full-table tbody tr:hover td:nth-child(2) { background-color: #ffefdb; }
+        .full-table tbody tr:hover td:nth-child(2) { background-color: var(--table-hover); }
         
         .full-table td.editable { background-color: #fffde7 !important; }
         .full-table td.editable:hover { background-color: #fff9c4 !important; }
-        .full-table td select { width: 100%; padding: 1px 4px; border: 1px solid #FFCF8A; border-radius: 4px; font-size: 0.6rem; background: white; }
-        .full-table td input[type="number"] { width: 100%; padding: 1px 4px; border: 1px solid #FFCF8A; border-radius: 4px; font-size: 0.6rem; }
+        .full-table td select { width: 100%; padding: 1px 4px; border: 1px solid var(--input-border); border-radius: 4px; font-size: 0.6rem; background: var(--input-bg); color: var(--text-primary); }
+        .full-table td input[type="number"] { width: 100%; padding: 1px 4px; border: 1px solid var(--input-border); border-radius: 4px; font-size: 0.6rem; background: var(--input-bg); color: var(--text-primary); }
         
-        .full-table td.stock-critical { 
-            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important; 
-            color: #b71c1c; 
-            font-weight: 700; 
-        }
-        .full-table td.stock-warning { 
-            background: linear-gradient(135deg, #fff3e0 0%, #ffccbc 100%) !important; 
-            color: #bf360c; 
-            font-weight: 600; 
-        }
-        .full-table td.stock-attention { 
-            background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%) !important; 
-            color: #f57f17; 
-        }
-        .full-table td.stock-normal { 
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important; 
-            color: #1b5e20; 
-        }
+        .full-table td.stock-critical { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important; color: #b71c1c; font-weight: 700; }
+        .full-table td.stock-warning { background: linear-gradient(135deg, #fff3e0 0%, #ffccbc 100%) !important; color: #bf360c; font-weight: 600; }
+        .full-table td.stock-attention { background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%) !important; color: #f57f17; }
+        .full-table td.stock-normal { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important; color: #1b5e20; }
         
         .full-table td.uto-highlight {
             background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%) !important;
@@ -287,33 +527,18 @@
             font-weight: 600;
             color: #4a148c;
         }
-        .full-table td.uto-highlight::before {
-            content: "📊 ";
-            font-size: 0.6rem;
-        }
-        
         .full-table td.best-highlight {
             background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%) !important;
             border-left: 3px solid #f9a825 !important;
             font-weight: 600;
             color: #e65100;
         }
-        .full-table td.best-highlight::before {
-            content: "⭐ ";
-            font-size: 0.6rem;
-        }
-        
         .full-table td.min-highlight {
             background: linear-gradient(135deg, #fff3e0 0%, #ffab91 100%) !important;
             border-left: 3px solid #e65100 !important;
             font-weight: 600;
             color: #bf360c;
         }
-        .full-table td.min-highlight::before {
-            content: "📋 ";
-            font-size: 0.6rem;
-        }
-        
         .full-table tr.edited-row td {
             background-color: #e3f2fd !important;
         }
@@ -326,44 +551,12 @@
         .full-table tr.edited-row:nth-child(even) td:first-child,
         .full-table tr.edited-row:nth-child(even) td:nth-child(2) { background-color: #bbdefb !important; }
         
-        .full-table tr.uto-row td:first-child {
-            border-left: 4px solid #7b1fa2 !important;
-            position: relative;
-        }
-        .full-table tr.uto-row td:first-child::after {
-            content: "📊";
-            position: absolute;
-            right: 2px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.6rem;
-        }
-        
-        .full-table tr.best-row td:first-child {
-            border-left: 4px solid #f9a825 !important;
-            position: relative;
-        }
-        .full-table tr.best-row td:first-child::after {
-            content: "⭐";
-            position: absolute;
-            right: 2px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.6rem;
-        }
-        
-        .full-table tr.min-row td:first-child {
-            border-left: 4px solid #e65100 !important;
-            position: relative;
-        }
-        .full-table tr.min-row td:first-child::after {
-            content: "📋";
-            position: absolute;
-            right: 2px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.6rem;
-        }
+        .full-table tr.uto-row td:first-child { border-left: 4px solid #7b1fa2 !important; position: relative; }
+        .full-table tr.uto-row td:first-child::after { content: "📊"; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; }
+        .full-table tr.best-row td:first-child { border-left: 4px solid #f9a825 !important; position: relative; }
+        .full-table tr.best-row td:first-child::after { content: "⭐"; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; }
+        .full-table tr.min-row td:first-child { border-left: 4px solid #e65100 !important; position: relative; }
+        .full-table tr.min-row td:first-child::after { content: "📋"; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; }
         
         .full-table td.max-min-highlight {
             background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
@@ -372,42 +565,43 @@
             border-left: 3px solid #FF8C00;
         }
         
-        footer { margin-top: 20px; text-align: center; font-size: 0.6rem; border-top: 2px solid #FFE0B5; padding-top: 12px; }
-        .info-note { font-size: 0.55rem; color: #a67c2e; margin-top: 4px; }
+        footer { margin-top: 20px; text-align: center; font-size: 0.6rem; border-top: 2px solid var(--border-color); padding-top: 12px; color: var(--text-muted); }
+        .info-note { font-size: 0.55rem; color: var(--text-muted); margin-top: 4px; }
         .right-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .right-header h3 { font-size: 1rem; color: #B45F06; }
+        .right-header h3 { font-size: 1rem; color: var(--text-secondary); }
         .action-buttons { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         
-        .upload-summary { font-size: 10px; background: #f0f7f0; padding: 3px 10px; border-radius: 20px; display: inline-block; }
-        .stats-badge { background: #e8f5e9; padding: 6px 10px; border-radius: 16px; font-size: 10px; margin-bottom: 6px; text-align: center; }
-        .hidden-counter { background: #fff3e0; padding: 6px 10px; border-radius: 16px; font-size: 10px; text-align: center; margin-top: 6px; color: #b45f06; }
+        .upload-summary { font-size: 10px; background: var(--success-bg); padding: 3px 10px; border-radius: 20px; display: inline-block; color: var(--text-primary); }
+        .stats-badge { background: var(--success-bg); padding: 6px 10px; border-radius: 16px; font-size: 10px; margin-bottom: 6px; text-align: center; color: var(--text-primary); }
         
         .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #f3f3f3; border-top: 2px solid #FF8C00; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .progress-bar { height: 3px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-top: 6px; }
+        .progress-bar { height: 3px; background: var(--border-light); border-radius: 2px; overflow: hidden; margin-top: 6px; }
         .progress-fill { height: 100%; background: #FF8C00; width: 0%; transition: width 0.3s; }
-        .auto-load-progress { background: #e8f5e9; padding: 6px 10px; border-radius: 12px; margin-bottom: 8px; font-size: 10px; display: none; }
-        .folder-path { font-size: 9px; color: #666; margin-top: 4px; word-break: break-all; }
-        .auto-load-result-container { margin-top: 6px; border: 1px solid #FFCF8A; border-radius: 10px; overflow: hidden; }
-        .auto-load-result-header { background: #FFF3E0; padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: bold; }
-        .auto-load-result-header:hover { background: #FFE1B3; }
-        .auto-load-result { max-height: 200px; overflow-y: auto; font-size: 9px; padding: 6px; background: #f5f5f5; transition: max-height 0.3s ease; }
+        
+        .auto-load-progress { background: var(--success-bg); padding: 6px 10px; border-radius: 12px; margin-bottom: 8px; font-size: 10px; display: none; color: var(--text-primary); }
+        .folder-path { font-size: 9px; color: var(--text-muted); margin-top: 4px; word-break: break-all; }
+        
+        .auto-load-result-container { margin-top: 6px; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; }
+        .auto-load-result-header { background: var(--bg-card); padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: bold; color: var(--text-primary); }
+        .auto-load-result-header:hover { background: var(--table-hover); }
+        .auto-load-result { max-height: 200px; overflow-y: auto; font-size: 9px; padding: 6px; background: var(--bg-card); transition: max-height 0.3s ease; color: var(--text-primary); }
         .auto-load-result.collapsed { max-height: 0; padding: 0; overflow: hidden; }
         .toggle-icon { font-size: 10px; transition: transform 0.2s; }
         .toggle-icon.rotated { transform: rotate(180deg); }
         
-        .search-area { background: #FFF3E0; border-radius: 12px; padding: 10px 14px; margin-top: 10px; }
+        .search-area { background: var(--bg-card); border-radius: 12px; padding: 10px 14px; margin-top: 10px; }
         .search-group { margin-bottom: 8px; }
-        .search-group label { font-weight: 700; display: block; margin-bottom: 3px; color: #4a2e00; font-size: 0.7rem; }
-        .search-group input[type="text"] { width: 100%; padding: 6px 10px; border-radius: 20px; border: 1px solid #FFCF8A; font-size: 0.7rem; }
+        .search-group label { font-weight: 700; display: block; margin-bottom: 3px; color: var(--text-secondary); font-size: 0.7rem; }
+        .search-group input[type="text"] { width: 100%; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-primary); font-size: 0.7rem; }
         .search-buttons { display: flex; gap: 6px; margin-top: 6px; }
-        .search-buttons button { flex: 1; padding: 4px; font-size: 0.6rem; background: #FF8C00; border: none; border-radius: 20px; cursor: pointer; }
+        .search-buttons button { flex: 1; padding: 4px; font-size: 0.6rem; background: #FF8C00; border: none; border-radius: 20px; cursor: pointer; color: #1e1e1e; font-weight: 600; }
         .search-buttons button:hover { background: #e07c00; }
-        .article-list-preview { font-size: 9px; color: #666; margin-top: 4px; max-height: 40px; overflow-y: auto; }
+        .article-list-preview { font-size: 9px; color: var(--text-muted); margin-top: 4px; max-height: 40px; overflow-y: auto; }
         
-        .color-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; padding: 6px 10px; background: #f5f5f5; border-radius: 10px; font-size: 9px; align-items: center; }
+        .color-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; padding: 6px 10px; background: var(--bg-card); border-radius: 10px; font-size: 9px; align-items: center; color: var(--text-primary); }
         .legend-item { display: inline-flex; align-items: center; gap: 4px; }
-        .legend-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #ddd; }
+        .legend-color { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--border-light); }
         .legend-color.gradient { background: linear-gradient(135deg, #ffcdd2, #c8e6c9); }
         .legend-color.uto { background: linear-gradient(135deg, #f3e5f5, #e1bee7); border-color: #7b1fa2; }
         .legend-color.best { background: linear-gradient(135deg, #fff8e1, #ffe082); border-color: #f9a825; }
@@ -415,7 +609,7 @@
         
         .filter-loading {
             display: none;
-            background: #fff3e0;
+            background: var(--warning-bg);
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 10px;
@@ -435,18 +629,6 @@
             margin-right: 6px;
             vertical-align: middle;
         }
-        
-        .filter-indicator {
-            font-size: 0.55rem;
-            padding: 2px 10px;
-            border-radius: 12px;
-            display: inline-block;
-            margin-left: 8px;
-        }
-        .filter-indicator.uto { background: #f3e5f5; color: #7b1fa2; }
-        .filter-indicator.best { background: #fff8e1; color: #f57f17; }
-        .filter-indicator.min { background: #fff3e0; color: #e65100; }
-        .filter-indicator.all { background: #e0e0e0; color: #555; }
         
         .toast-container {
             position: fixed;
@@ -507,6 +689,14 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        
+        @media (max-width: 768px) {
+            .dashboard-flex { flex-direction: column; }
+            .left-panel { width: 100%; }
+            .left-panel.collapsed { width: 0; padding: 0; margin: 0; }
+            .analytics-grid { grid-template-columns: repeat(2, 1fr); }
+            .header h1 { font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
@@ -514,12 +704,21 @@
     <div class="header">
         <h1>📊 ЛЕМАНА ПРО <small>Анализ резервов</small></h1>
         <div class="header-controls">
+            <button id="themeToggleBtn" class="theme-toggle-btn">🌙 Тёмная</button>
             <span id="modeIndicator" class="mode-indicator basic-mode">
                 <span class="indicator-dot"></span> Базовый
             </span>
             <button id="toggleModeBtn" class="mode-toggle-btn basic">🔄 Онлайн-редактор</button>
             <button id="expandPanelBtnGlobal" class="global-expand-btn">▶ Панель</button>
         </div>
+    </div>
+
+    <!-- ===== Баннер оповещений ===== -->
+    <div id="alertBanner" class="alert-banner">
+        <span>⚠️ <span id="alertMessage">Обнаружены товары с критическим запасом без поставки!</span></span>
+        <span class="alert-count" id="alertCount">0</span>
+        <button class="alert-toggle" id="alertToggleBtn">🔕 Отключить</button>
+        <span class="alert-close" onclick="document.getElementById('alertBanner').classList.remove('show')">✕</span>
     </div>
 
     <div class="dashboard-flex">
@@ -632,6 +831,10 @@
                     <input type="text" id="articleSearchInput" placeholder="Введите артикул">
                 </div>
                 <div class="search-group">
+                    <label>🔍 Поиск по наименованию</label>
+                    <input type="text" id="nameSearchInput" placeholder="Введите название товара">
+                </div>
+                <div class="search-group">
                     <label>📎 Загрузить список артикулов</label>
                     <button id="loadArticleListBtn" class="secondary-btn" style="margin-top:0;">📂 Загрузить файл</button>
                     <div id="articleListPreview" class="article-list-preview"></div>
@@ -644,44 +847,173 @@
         </div>
 
         <div class="right-panel">
-            <div class="right-header">
-                <h3>📋 Сводная таблица</h3>
-                <div class="action-buttons">
-                    <button id="computeSummaryBtn" class="btn-compute">🧮 ВЫЧИСЛИТЬ</button>
-                    <button id="exportMasterBtn" class="btn-excel-export">⬇️ ВЫГРУЗИТЬ ВСЕ</button>
+            <!-- ===== Вкладки ===== -->
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="table">📋 Таблица</button>
+                <button class="tab-btn" data-tab="analytics">📊 Аналитика</button>
+            </div>
+
+            <!-- ===== Вкладка "Таблица" ===== -->
+            <div id="tab-table" class="tab-content active">
+                <div class="right-header">
+                    <h3>📋 Сводная таблица</h3>
+                    <div class="action-buttons">
+                        <button id="computeSummaryBtn" class="btn-compute">🧮 ВЫЧИСЛИТЬ</button>
+                        <button id="exportMasterBtn" class="btn-excel-export">⬇️ ВЫГРУЗИТЬ ВСЕ</button>
+                    </div>
+                </div>
+                
+                <div id="filterLoading" class="filter-loading">
+                    <span class="spinner-small"></span> Применяем фильтры...
+                </div>
+                
+                <div class="color-legend">
+                    <span class="legend-item"><span class="legend-color gradient"></span> Градиент по дням</span>
+                    <span class="legend-item"><span class="legend-color uto"></span> УТО</span>
+                    <span class="legend-item"><span class="legend-color best"></span> Бест</span>
+                    <span class="legend-item"><span class="legend-color min"></span> Мины</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#fff3e0;border-color:#FF8C00;"></span> Наибольший резерв MIN</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#fffde7;"></span> Редактируемые</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#e3f2fd;border-color:#1976d2;"></span> Изменено</span>
+                </div>
+                
+                <div id="uploadSummary" class="upload-summary">📁 Загружено: 0 / 10 отчетов</div>
+                <div id="statsInfo" class="stats-badge" style="display: none;"></div>
+                <div id="loadingIndicator" style="display: none; background: var(--bg-card); padding: 8px; border-radius: 10px; margin-bottom: 6px;">
+                    <div class="loading-spinner"></div> <span id="loadingText">Обработка данных...</span>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                </div>
+                <div class="pivot-wrapper" id="pivotWrapper">
+                    <div class="table-loading-overlay" id="tableLoadingOverlay">
+                        <div class="spinner-large"></div>
+                    </div>
+                    <table class="full-table" id="masterTable">
+                        <thead id="tableHeader"></thead>
+                        <tbody id="masterTbody"></tbody>
+                    </table>
+                </div>
+                <div id="hiddenCounter" class="hidden-counter" style="display: none;"></div>
+            </div>
+
+            <!-- ===== Вкладка "Аналитика" ===== -->
+            <div id="tab-analytics" class="tab-content">
+                <div class="right-header">
+                    <h3>📊 Аналитика и статистика</h3>
+                    <div class="action-buttons">
+                        <button id="refreshAnalyticsBtn" class="btn-compute">🔄 Обновить</button>
+                    </div>
+                </div>
+                
+                <div id="analyticsContent">
+                    <!-- Карточки со статистикой -->
+                    <div class="analytics-grid" id="statsCards">
+                        <div class="stat-card danger" id="statCritical">
+                            <div class="stat-value" id="statCriticalValue">0</div>
+                            <div class="stat-label">⚠️ Критический запас (&lt;7 дн)</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card danger" id="statCriticalNoTransit">
+                            <div class="stat-value" id="statCriticalNoTransitValue">0</div>
+                            <div class="stat-label">🚫 Критический без поставки</div>
+                            <div class="stat-sub">(в пути &lt;3 дн или нет)</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card warning" id="statWarning">
+                            <div class="stat-value" id="statWarningValue">0</div>
+                            <div class="stat-label">⚡ Внимание (7-14 дн)</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card success" id="statNormal">
+                            <div class="stat-value" id="statNormalValue">0</div>
+                            <div class="stat-label">✅ Нормальный запас (&gt;22 дн)</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card purple" id="statUto">
+                            <div class="stat-value" id="statUtoValue">0</div>
+                            <div class="stat-label">📊 УТО-позиции</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card gold" id="statBest">
+                            <div class="stat-value" id="statBestValue">0</div>
+                            <div class="stat-label">⭐ Бест-позиции</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card warning" id="statMin">
+                            <div class="stat-value" id="statMinValue">0</div>
+                            <div class="stat-label">📋 Мины (заказ завтра)</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                        <div class="stat-card info" id="statInTransit">
+                            <div class="stat-value" id="statInTransitValue">0</div>
+                            <div class="stat-label">🚚 В пути (&gt;0 дн)</div>
+                            <div class="stat-hint">📤 Кликните для выгрузки</div>
+                        </div>
+                    </div>
+
+                    <!-- Распределение запасов -->
+                    <div class="analytics-section">
+                        <h4>📈 Распределение запасов по магазинам</h4>
+                        <div id="stockDistribution" style="display: flex; gap: 4px; height: 60px; align-items: flex-end; padding: 4px 0;"></div>
+                        <div style="font-size:0.5rem; color:var(--text-muted); text-align:center; margin-top:4px;">
+                            <span style="display:inline-block; width:12px; height:12px; background:#e53935; border-radius:2px;"></span> Критический 
+                            <span style="display:inline-block; width:12px; height:12px; background:#fb8c00; border-radius:2px; margin-left:8px;"></span> Внимание 
+                            <span style="display:inline-block; width:12px; height:12px; background:#43a047; border-radius:2px; margin-left:8px;"></span> Норма
+                            <span style="display:inline-block; width:12px; height:12px; background:#1e88e5; border-radius:2px; margin-left:8px;"></span> В пути
+                        </div>
+                    </div>
+
+                    <!-- ===== Топ-10 проблемных товаров ===== -->
+                    <div class="analytics-section">
+                        <h4>
+                            🔴 Топ-10 проблемных товаров (критический запас без поставки)
+                            <div class="section-actions">
+                                <button class="btn-export-top" onclick="exportTopItems('critical')">📤 ТОП-10</button>
+                                <button class="btn-export-all" onclick="exportAllItems('critical')">📤 ВСЕ</button>
+                            </div>
+                        </h4>
+                        <div class="top-table-wrapper">
+                            <table class="top-table" id="topCriticalTable">
+                                <thead>
+                                    <tr><th>#</th><th>Магазин</th><th>Артикул</th><th>Наименование</th><th>Запас (дн)</th><th>В пути (дн)</th><th>УТО</th><th>Действие</th></tr>
+                                </thead>
+                                <tbody id="topCriticalBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== Топ-10 товаров с УТО ===== -->
+                    <div class="analytics-section">
+                        <h4>
+                            📊 Топ-10 товаров с УТО
+                            <div class="section-actions">
+                                <button class="btn-export-top" onclick="exportTopItems('uto')">📤 ТОП-10</button>
+                                <button class="btn-export-all" onclick="exportAllItems('uto')">📤 ВСЕ</button>
+                            </div>
+                        </h4>
+                        <div class="top-table-wrapper">
+                            <table class="top-table" id="topUtoTable">
+                                <thead>
+                                    <tr><th>#</th><th>Магазин</th><th>Артикул</th><th>Наименование</th><th>УТО (руб)</th><th>Запас (дн)</th><th>В пути (дн)</th><th>Действие</th></tr>
+                                </thead>
+                                <tbody id="topUtoBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== Сводка по магазинам ===== -->
+                    <div class="analytics-section">
+                        <h4>🏬 Сводка по магазинам</h4>
+                        <div class="top-table-wrapper">
+                            <table class="top-table" id="storeSummaryTable">
+                                <thead>
+                                    <tr><th>Магазин</th><th>Всего</th><th>Критический</th><th>Без поставки</th><th>Внимание</th><th>Норма</th><th>УТО</th><th>Бест</th><th>Мины</th><th>В пути</th><th>Изменено</th></tr>
+                                </thead>
+                                <tbody id="storeSummaryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div id="filterLoading" class="filter-loading">
-                <span class="spinner-small"></span> Применяем фильтры...
-            </div>
-            
-            <div class="color-legend">
-                <span class="legend-item"><span class="legend-color gradient"></span> Градиент по дням</span>
-                <span class="legend-item"><span class="legend-color uto"></span> УТО</span>
-                <span class="legend-item"><span class="legend-color best"></span> Бест</span>
-                <span class="legend-item"><span class="legend-color min"></span> Мины</span>
-                <span class="legend-item"><span class="legend-color" style="background:#fff3e0;border-color:#FF8C00;"></span> Наибольший резерв MIN</span>
-                <span class="legend-item"><span class="legend-color" style="background:#fffde7;"></span> Редактируемые</span>
-                <span class="legend-item"><span class="legend-color" style="background:#e3f2fd;border-color:#1976d2;"></span> Изменено</span>
-            </div>
-            
-            <div id="uploadSummary" class="upload-summary">📁 Загружено: 0 / 10 отчетов</div>
-            <div id="statsInfo" class="stats-badge" style="display: none;"></div>
-            <div id="loadingIndicator" style="display: none; background: #fff3e0; padding: 8px; border-radius: 10px; margin-bottom: 6px;">
-                <div class="loading-spinner"></div> <span id="loadingText">Обработка данных...</span>
-                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            </div>
-            <div class="pivot-wrapper" id="pivotWrapper">
-                <div class="table-loading-overlay" id="tableLoadingOverlay">
-                    <div class="spinner-large"></div>
-                </div>
-                <table class="full-table" id="masterTable">
-                    <thead id="tableHeader"></thead>
-                    <tbody id="masterTbody"></tbody>
-                </table>
-            </div>
-            <div id="hiddenCounter" class="hidden-counter" style="display: none;"></div>
         </div>
     </div>
     <footer>Лемана Pro — анализ резервов и товарных запасов. Автозагрузка работает в Chrome/Edge/Opera.</footer>
@@ -715,6 +1047,43 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
+// ==================== Управление уведомлениями ====================
+let alertsEnabled = true;
+
+function toggleAlerts() {
+    alertsEnabled = !alertsEnabled;
+    const btn = document.getElementById('alertToggleBtn');
+    const banner = document.getElementById('alertBanner');
+    if (alertsEnabled) {
+        btn.textContent = '🔕 Отключить';
+        btn.style.background = 'rgba(255,255,255,0.15)';
+        showToast('🔔 Уведомления включены', 'info');
+        const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+        if (data.length) checkCriticalItems(data);
+    } else {
+        btn.textContent = '🔔 Включить';
+        btn.style.background = 'rgba(255,255,255,0.3)';
+        banner.classList.remove('show');
+        showToast('🔕 Уведомления отключены', 'info');
+    }
+}
+
+// ==================== Тёмная тема ====================
+let isDarkTheme = false;
+function toggleTheme() {
+    isDarkTheme = !isDarkTheme;
+    document.documentElement.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light');
+    document.getElementById('themeToggleBtn').textContent = isDarkTheme ? '☀️ Светлая' : '🌙 Тёмная';
+    localStorage.setItem('lemana_theme', isDarkTheme ? 'dark' : 'light');
+    showToast(isDarkTheme ? '🌙 Включена тёмная тема' : '☀️ Включена светлая тема', 'info');
+}
+
+if (localStorage.getItem('lemana_theme') === 'dark') {
+    isDarkTheme = true;
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeToggleBtn').textContent = '☀️ Светлая';
+}
+
 // ==================== Настройки ====================
 const DISPLAY_LIMIT_BASIC = 200;
 let DISPLAY_LIMIT = 200;
@@ -725,6 +1094,7 @@ let activeQuickFilter = 'all';
 let historyStack = [];
 let historyIndex = -1;
 const MAX_HISTORY = 50;
+let criticalAlertShown = false;
 
 // ==================== Состояние ====================
 const STATE_KEY = 'lemana_pro_state';
@@ -748,7 +1118,8 @@ function loadState() {
                 isOnlineMode: parsed.isOnlineMode || false,
                 activeQuickFilter: parsed.activeQuickFilter || 'all',
                 visibleColumns: parsed.visibleColumns || null,
-                editedRows: parsed.editedRows || {}
+                editedRows: parsed.editedRows || {},
+                alertsEnabled: parsed.alertsEnabled !== undefined ? parsed.alertsEnabled : true
             };
         }
     } catch (e) {}
@@ -765,7 +1136,8 @@ function loadState() {
         isOnlineMode: false,
         activeQuickFilter: 'all',
         visibleColumns: null,
-        editedRows: {}
+        editedRows: {},
+        alertsEnabled: true
     };
 }
 
@@ -787,7 +1159,8 @@ function saveState() {
             editedRows: Array.from(editedRows.entries()).reduce((acc, [key, val]) => {
                 acc[key] = val;
                 return acc;
-            }, {})
+            }, {}),
+            alertsEnabled: alertsEnabled
         };
         localStorage.setItem(STATE_KEY, JSON.stringify(state));
     } catch (e) {}
@@ -839,6 +1212,10 @@ if (appState.editedRows) {
     Object.entries(appState.editedRows).forEach(([key, val]) => {
         editedRows.set(key, val);
     });
+}
+
+if (appState.alertsEnabled !== undefined) {
+    alertsEnabled = appState.alertsEnabled;
 }
 
 const MIN_TYPES = [
@@ -939,6 +1316,9 @@ let loadedReports = { "Гамма": false, "Резервы": false, "УТО": fa
 const reportsNames = ["Гамма", "Резервы", "УТО", "БЭСТ", "Автоминимумы", "Максы", "ЭКСПО", "Поставки", "Коррекции", "Недопоставки"];
 let currentCalculation = null;
 let articleFilterList = null;
+let nameSearchTerm = '';
+let criticalItemsCache = [];
+let utoItemsCache = [];
 
 // ==================== Кеши ====================
 const reservyMap = new Map();
@@ -1355,6 +1735,7 @@ function applyFilters() {
             const stockMax = parseInt(document.getElementById('stockMaxInput').value) || 999;
             const transitMin = parseInt(document.getElementById('transitMinInput').value) || 0;
             const transitMax = parseInt(document.getElementById('transitMaxInput').value) || 999;
+            const nameSearch = document.getElementById('nameSearchInput').value.trim().toLowerCase();
             
             const filterKey = JSON.stringify({
                 store: storeFilter, dept: deptFilter, subdept: subdeptFilter,
@@ -1362,7 +1743,8 @@ function applyFilters() {
                 stockMin, stockMax, transitMin, transitMax,
                 online: isOnlineMode,
                 quickFilter: activeQuickFilter,
-                articles: articleFilterList ? Array.from(articleFilterList).sort().join(',') : 'all'
+                articles: articleFilterList ? Array.from(articleFilterList).sort().join(',') : 'all',
+                nameSearch: nameSearch
             });
             
             if (cachedData.lastFilters === filterKey && cachedData.filteredData.length) {
@@ -1383,6 +1765,13 @@ function applyFilters() {
             }
             if (subdeptFilter !== 'all') {
                 result = result.filter(row => String(row["Подотдел"] || "") === subdeptFilter);
+            }
+            
+            if (nameSearch) {
+                result = result.filter(row => {
+                    const name = String(row["Наименование"] || "").toLowerCase();
+                    return name.includes(nameSearch);
+                });
             }
             
             if (isOnlineMode) {
@@ -1454,6 +1843,15 @@ function applyFilters() {
             cachedData.lastFilters = filterKey;
             filteredCalculatedResult = result;
             renderFullTableWithFilter();
+            
+            if (alertsEnabled && result.length) {
+                checkCriticalItems(result);
+            } else if (!alertsEnabled) {
+                document.getElementById('alertBanner').classList.remove('show');
+            }
+            
+            updateAnalytics(result);
+            
         } catch (e) {
             console.error('Ошибка при фильтрации:', e);
             filteredCalculatedResult = [...cachedData.fullData];
@@ -1479,22 +1877,612 @@ function scheduleFilter() {
     }, 300);
 }
 
-// ==================== Сброс всех изменений ====================
-function resetAllChanges() {
-    const count = editedRows.size;
-    if (count === 0) {
-        showToast('Нет изменений для сброса', 'info');
+// ==================== Оповещения о критических товарах ====================
+function checkCriticalItems(data) {
+    const criticalItems = data.filter(row => {
+        const days = toNumber(row["Запас, дн."], 999);
+        const transitDays = toNumber(row["В пути, дн."], 0);
+        return days < 3 && days > 0 && transitDays < 3;
+    });
+    
+    criticalItemsCache = criticalItems;
+    
+    const banner = document.getElementById('alertBanner');
+    const message = document.getElementById('alertMessage');
+    const count = document.getElementById('alertCount');
+    
+    if (criticalItems.length > 0 && alertsEnabled) {
+        message.textContent = `Обнаружены товары с критическим запасом без поставки (<3 дн)!`;
+        count.textContent = criticalItems.length;
+        banner.classList.add('show');
+        criticalAlertShown = true;
+        
+        if (!criticalAlertShown) {
+            const top3 = criticalItems.slice(0, 3);
+            const items = top3.map(item => `${item["Артикул"]} (${item["Запас, дн."]} дн, в пути ${item["В пути, дн."] || 0} дн)`).join(', ');
+            showToast(`⚠️ Критический запас без поставки: ${items}${criticalItems.length > 3 ? ` и ещё ${criticalItems.length - 3}` : ''}`, 'warning', 5000);
+            criticalAlertShown = true;
+        }
+    } else {
+        banner.classList.remove('show');
+        criticalAlertShown = false;
+    }
+}
+
+// ==================== Аналитика ====================
+function updateAnalytics(data) {
+    const storeStats = {};
+    let totalCritical = 0, totalCriticalNoTransit = 0, totalWarning = 0, totalNormal = 0;
+    let totalUto = 0, totalBest = 0, totalMin = 0, totalInTransit = 0;
+    const criticalItems = [];
+    const criticalNoTransitItems = [];
+    const utoItems = [];
+    
+    data.forEach(row => {
+        const store = String(row["№ магазина"] || "Неизвестно");
+        if (!storeStats[store]) {
+            storeStats[store] = { 
+                critical: 0, criticalNoTransit: 0, warning: 0, normal: 0, 
+                uto: 0, best: 0, min: 0, inTransit: 0, total: 0 
+            };
+        }
+        
+        const days = toNumber(row["Запас, дн."], 999);
+        const transitDays = toNumber(row["В пути, дн."], 0);
+        const hasTransit = transitDays > 0;
+        
+        if (hasTransit) totalInTransit++;
+        
+        if (days < 7 && days > 0) {
+            storeStats[store].critical++;
+            totalCritical++;
+            criticalItems.push(row);
+            
+            if (transitDays < 3) {
+                storeStats[store].criticalNoTransit++;
+                totalCriticalNoTransit++;
+                criticalNoTransitItems.push(row);
+            }
+        } else if (days < 14) {
+            storeStats[store].warning++;
+            totalWarning++;
+        } else if (days < 999) {
+            storeStats[store].normal++;
+            totalNormal++;
+        }
+        
+        const utoRub = toNumber(row["УТО, руб."], 0);
+        const utoSht = toNumber(row["УТО, шт."], 0);
+        if (utoRub > 0 || utoSht > 0) {
+            storeStats[store].uto++;
+            totalUto++;
+            utoItems.push(row);
+        }
+        
+        const hasBest = (row["BEST гамма"] && row["BEST гамма"] !== "") || 
+                        (row["BEST NEXT"] && row["BEST NEXT"] !== "");
+        if (hasBest) {
+            storeStats[store].best++;
+            totalBest++;
+        }
+        
+        const tomorrow = getTomorrowDay();
+        const hasMin = String(row["Дни выхода заказа поставщика"] || "").trim() === tomorrow;
+        if (hasMin) {
+            storeStats[store].min++;
+            totalMin++;
+        }
+        
+        storeStats[store].total++;
+        if (hasTransit) storeStats[store].inTransit++;
+    });
+    
+    criticalItemsCache = criticalNoTransitItems;
+    utoItemsCache = utoItems;
+    
+    document.getElementById('statCriticalValue').textContent = totalCritical;
+    document.getElementById('statCriticalNoTransitValue').textContent = totalCriticalNoTransit;
+    document.getElementById('statWarningValue').textContent = totalWarning;
+    document.getElementById('statNormalValue').textContent = totalNormal;
+    document.getElementById('statUtoValue').textContent = totalUto;
+    document.getElementById('statBestValue').textContent = totalBest;
+    document.getElementById('statMinValue').textContent = totalMin;
+    document.getElementById('statInTransitValue').textContent = totalInTransit;
+    
+    renderTopCritical(criticalNoTransitItems);
+    renderTopUto(utoItems);
+    renderStoreSummary(storeStats);
+    renderStockDistribution(storeStats);
+    
+    // ===== Добавляем обработчики кликов на карточки =====
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.removeEventListener('click', card._clickHandler);
+        
+        let cardType = '';
+        const cardId = card.id || '';
+        if (cardId === 'statCritical') cardType = 'critical';
+        else if (cardId === 'statCriticalNoTransit') cardType = 'criticalNoTransit';
+        else if (cardId === 'statWarning') cardType = 'warning';
+        else if (cardId === 'statNormal') cardType = 'normal';
+        else if (cardId === 'statUto') cardType = 'uto';
+        else if (cardId === 'statBest') cardType = 'best';
+        else if (cardId === 'statMin') cardType = 'min';
+        else if (cardId === 'statInTransit') cardType = 'inTransit';
+        
+        if (cardType) {
+            card.title = '📤 Кликните для выгрузки';
+            card.style.cursor = 'pointer';
+            
+            const handler = function() {
+                exportCardData(cardType);
+            };
+            card._clickHandler = handler;
+            card.addEventListener('click', handler);
+        }
+    });
+}
+
+function renderTopCritical(items) {
+    const tbody = document.getElementById('topCriticalBody');
+    tbody.innerHTML = '';
+    const sorted = items.sort((a, b) => toNumber(a["Запас, дн."]) - toNumber(b["Запас, дн."])).slice(0, 10);
+    
+    sorted.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const days = toNumber(row["Запас, дн."]);
+        const transitDays = toNumber(row["В пути, дн."], 0);
+        const utoRub = toNumber(row["УТО, руб."], 0);
+        tr.innerHTML = `
+            <td class="rank">${idx + 1}</td>
+            <td>${row["№ магазина"] || ''}</td>
+            <td><strong>${row["Артикул"] || ''}</strong></td>
+            <td>${(row["Наименование"] || '').substring(0, 25)}${(row["Наименование"] || '').length > 25 ? '...' : ''}</td>
+            <td><span class="badge-critical">${days} дн</span></td>
+            <td>${transitDays > 0 ? `<span class="badge-transit">${transitDays} дн</span>` : '<span class="badge-no-transit">нет</span>'}</td>
+            <td>${utoRub > 0 ? '📊 ' + utoRub : '-'}</td>
+            <td><button class="export-btn" onclick="exportArticles(['${row["Артикул"]}'])">📤 Выгрузить</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:10px;">✅ Нет товаров с критическим запасом без поставки</td></tr>';
+    }
+}
+
+function renderTopUto(items) {
+    const tbody = document.getElementById('topUtoBody');
+    tbody.innerHTML = '';
+    const sorted = items.sort((a, b) => toNumber(b["УТО, руб."]) - toNumber(a["УТО, руб."])).slice(0, 10);
+    
+    sorted.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const utoRub = toNumber(row["УТО, руб."], 0);
+        const days = toNumber(row["Запас, дн."]);
+        const transitDays = toNumber(row["В пути, дн."], 0);
+        tr.innerHTML = `
+            <td class="rank">${idx + 1}</td>
+            <td>${row["№ магазина"] || ''}</td>
+            <td><strong>${row["Артикул"] || ''}</strong></td>
+            <td>${(row["Наименование"] || '').substring(0, 25)}${(row["Наименование"] || '').length > 25 ? '...' : ''}</td>
+            <td><span class="badge-uto">${utoRub} руб</span></td>
+            <td>${days < 999 ? days + ' дн' : '-'}</td>
+            <td>${transitDays > 0 ? `<span class="badge-transit">${transitDays} дн</span>` : '-'}</td>
+            <td><button class="export-btn" onclick="exportArticles(['${row["Артикул"]}'])">📤 Выгрузить</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:10px;">📊 Нет товаров с УТО</td></tr>';
+    }
+}
+
+function renderStoreSummary(storeStats) {
+    const tbody = document.getElementById('storeSummaryBody');
+    tbody.innerHTML = '';
+    const sorted = Object.keys(storeStats).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    sorted.forEach(store => {
+        const stats = storeStats[store];
+        const tr = document.createElement('tr');
+        const editedCount = editedRows.size;
+        tr.innerHTML = `
+            <td><strong>${store}</strong></td>
+            <td>${stats.total}</td>
+            <td><span class="badge-critical">${stats.critical}</span></td>
+            <td><span class="badge-no-transit">${stats.criticalNoTransit}</span></td>
+            <td><span class="badge-warning">${stats.warning}</span></td>
+            <td><span style="color:#43a047;">${stats.normal}</span></td>
+            <td><span style="color:#7b1fa2;">${stats.uto}</span></td>
+            <td><span style="color:#f9a825;">${stats.best}</span></td>
+            <td><span style="color:#e65100;">${stats.min}</span></td>
+            <td><span class="badge-transit">${stats.inTransit}</span></td>
+            <td>${editedCount}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderStockDistribution(storeStats) {
+    const container = document.getElementById('stockDistribution');
+    container.innerHTML = '';
+    const stores = Object.keys(storeStats).sort((a, b) => parseInt(a) - parseInt(b));
+    
+    if (stores.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-muted); font-size:0.7rem;">Нет данных для отображения</div>';
         return;
     }
     
-    if (confirm(`🗑️ Вы уверены, что хотите сбросить все ${count} изменений для всех магазинов?`)) {
-        editedRows.clear();
-        historyStack = [];
-        historyIndex = -1;
-        saveState();
-        renderFullTableWithFilter();
-        showToast(`✅ Сброшено ${count} изменений`, 'success');
+    const maxValue = Math.max(...stores.map(s => storeStats[s].total || 1));
+    const barHeight = 50;
+    
+    stores.slice(0, 20).forEach(store => {
+        const stats = storeStats[store];
+        const total = stats.total || 1;
+        const height = Math.max((total / maxValue) * barHeight, 4);
+        
+        const div = document.createElement('div');
+        div.style.cssText = `flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;`;
+        
+        const barContainer = document.createElement('div');
+        barContainer.style.cssText = `width:100%; height:${barHeight}px; display:flex; flex-direction:column-reverse; border-radius:2px; overflow:hidden;`;
+        
+        const inTransitPct = stats.inTransit / total;
+        const criticalPct = stats.critical / total;
+        const warningPct = stats.warning / total;
+        const normalPct = stats.normal / total;
+        
+        if (inTransitPct > 0) {
+            const bar = document.createElement('div');
+            bar.style.cssText = `height:${inTransitPct * 100}%; background:#1e88e5; transition:0.3s;`;
+            bar.title = `${store}: В пути ${stats.inTransit}`;
+            barContainer.appendChild(bar);
+        }
+        if (criticalPct > 0) {
+            const bar = document.createElement('div');
+            bar.style.cssText = `height:${criticalPct * 100}%; background:#e53935; transition:0.3s;`;
+            bar.title = `${store}: Критический ${stats.critical}`;
+            barContainer.appendChild(bar);
+        }
+        if (warningPct > 0) {
+            const bar = document.createElement('div');
+            bar.style.cssText = `height:${warningPct * 100}%; background:#fb8c00; transition:0.3s;`;
+            bar.title = `${store}: Внимание ${stats.warning}`;
+            barContainer.appendChild(bar);
+        }
+        if (normalPct > 0) {
+            const bar = document.createElement('div');
+            bar.style.cssText = `height:${normalPct * 100}%; background:#43a047; transition:0.3s;`;
+            bar.title = `${store}: Норма ${stats.normal}`;
+            barContainer.appendChild(bar);
+        }
+        
+        div.appendChild(barContainer);
+        
+        const label = document.createElement('span');
+        label.textContent = store;
+        label.style.cssText = 'font-size:0.4rem; color:var(--text-muted); white-space:nowrap;';
+        div.appendChild(label);
+        
+        container.appendChild(div);
+    });
+}
+
+// ==================== ЭКСПОРТ ФУНКЦИИ ====================
+
+function exportArticles(articles) {
+    if (!articles || articles.length === 0) {
+        showToast('Нет артикулов для экспорта', 'warning');
+        return;
     }
+    
+    const storeFilter = document.getElementById('storeFilter').value;
+    if (storeFilter === 'all') {
+        showToast('Выберите конкретный магазин!', 'warning');
+        return;
+    }
+    
+    const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+    const filtered = data.filter(row => articles.includes(String(row["Артикул"] || "").trim()));
+    
+    if (filtered.length === 0) {
+        showToast('Артикулы не найдены в текущих данных', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [["Магазин", "Артикул", "Наименование", "Запас, дн.", "В пути, дн.", "УТО, руб.", "УТО, шт."]];
+    filtered.forEach(row => {
+        wsData.push([
+            row["№ магазина"] || '',
+            row["Артикул"] || '',
+            row["Наименование"] || '',
+            row["Запас, дн."] || '',
+            row["В пути, дн."] || '',
+            row["УТО, руб."] || '',
+            row["УТО, шт."] || ''
+        ]);
+    });
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, "Артикулы");
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    link.download = `articles_${storeFilter}_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружено ${filtered.length} артикулов`, 'success');
+}
+
+function exportTopItems(type) {
+    let items = [];
+    let name = '';
+    const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+    
+    if (type === 'critical') {
+        if (criticalItemsCache.length === 0 && data.length > 0) {
+            criticalItemsCache = data.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                const transitDays = toNumber(row["В пути, дн."], 0);
+                return days < 7 && days > 0 && transitDays < 3;
+            });
+        }
+        items = criticalItemsCache.slice(0, 10);
+        name = 'Критический_запас_без_поставки_ТОП10';
+    } else if (type === 'uto') {
+        if (utoItemsCache.length === 0 && data.length > 0) {
+            utoItemsCache = data.filter(row => {
+                const utoRub = toNumber(row["УТО, руб."], 0);
+                const utoSht = toNumber(row["УТО, шт."], 0);
+                return utoRub > 0 || utoSht > 0;
+            });
+        }
+        items = utoItemsCache.slice(0, 10);
+        name = 'УТО_ТОП10';
+    }
+    
+    if (items.length === 0) {
+        showToast('Нет данных для экспорта', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [["#", "Магазин", "Артикул", "Наименование", "Запас, дн.", "В пути, дн.", "УТО, руб.", "УТО, шт."]];
+    items.forEach((row, idx) => {
+        wsData.push([
+            idx + 1,
+            row["№ магазина"] || '',
+            row["Артикул"] || '',
+            row["Наименование"] || '',
+            row["Запас, дн."] || '',
+            row["В пути, дн."] || '',
+            row["УТО, руб."] || '',
+            row["УТО, шт."] || ''
+        ]);
+    });
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, name);
+    
+    ws['!cols'] = [
+        { wch: 5 }, { wch: 12 }, { wch: 15 }, { wch: 35 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }
+    ];
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const storeFilter = document.getElementById('storeFilter').value;
+    const storeSuffix = storeFilter !== 'all' ? `_магазин_${storeFilter}` : '';
+    link.download = `${name}${storeSuffix}_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружено ${items.length} артикулов (ТОП-10)`, 'success');
+}
+
+function exportAllItems(type) {
+    let items = [];
+    let name = '';
+    const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+    
+    if (type === 'critical') {
+        if (criticalItemsCache.length === 0 && data.length > 0) {
+            criticalItemsCache = data.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                const transitDays = toNumber(row["В пути, дн."], 0);
+                return days < 7 && days > 0 && transitDays < 3;
+            });
+        }
+        items = criticalItemsCache;
+        name = 'Критический_запас_без_поставки_ВСЕ';
+    } else if (type === 'uto') {
+        if (utoItemsCache.length === 0 && data.length > 0) {
+            utoItemsCache = data.filter(row => {
+                const utoRub = toNumber(row["УТО, руб."], 0);
+                const utoSht = toNumber(row["УТО, шт."], 0);
+                return utoRub > 0 || utoSht > 0;
+            });
+        }
+        items = utoItemsCache;
+        name = 'УТО_ВСЕ';
+    }
+    
+    if (items.length === 0) {
+        showToast('Нет данных для экспорта', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [["#", "Магазин", "Артикул", "Наименование", "Запас, дн.", "В пути, дн.", "УТО, руб.", "УТО, шт."]];
+    items.forEach((row, idx) => {
+        wsData.push([
+            idx + 1,
+            row["№ магазина"] || '',
+            row["Артикул"] || '',
+            row["Наименование"] || '',
+            row["Запас, дн."] || '',
+            row["В пути, дн."] || '',
+            row["УТО, руб."] || '',
+            row["УТО, шт."] || ''
+        ]);
+    });
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, name);
+    
+    ws['!cols'] = [
+        { wch: 5 }, { wch: 12 }, { wch: 15 }, { wch: 35 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }
+    ];
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const storeFilter = document.getElementById('storeFilter').value;
+    const storeSuffix = storeFilter !== 'all' ? `_магазин_${storeFilter}` : '';
+    link.download = `${name}${storeSuffix}_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружено ${items.length} артикулов (ВСЕ)`, 'success');
+}
+
+function exportCardData(cardType) {
+    const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+    let items = [];
+    let fileName = '';
+    let reason = '';
+    
+    switch(cardType) {
+        case 'critical':
+            items = data.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                return days < 7 && days > 0;
+            });
+            fileName = 'Критический_запас_менее_7_дней';
+            reason = 'Запас менее 7 дней';
+            break;
+        case 'criticalNoTransit':
+            items = data.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                const transitDays = toNumber(row["В пути, дн."], 0);
+                return days < 7 && days > 0 && transitDays < 3;
+            });
+            fileName = 'Критический_запас_без_поставки';
+            reason = 'Запас менее 7 дней и в пути менее 3 дней';
+            break;
+        case 'warning':
+            items = data.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                return days >= 7 && days < 14;
+            });
+            fileName = 'Внимание_запас_7-14_дней';
+            reason = 'Запас от 7 до 14 дней';
+            break;
+        case 'normal':
+            items = data.filter(row => {
+                const days = toNumber(row["Запас, дн."], 999);
+                return days >= 22 && days < 999;
+            });
+            fileName = 'Нормальный_запас_более_22_дней';
+            reason = 'Запас более 22 дней';
+            break;
+        case 'uto':
+            items = data.filter(row => {
+                const utoRub = toNumber(row["УТО, руб."], 0);
+                const utoSht = toNumber(row["УТО, шт."], 0);
+                return utoRub > 0 || utoSht > 0;
+            });
+            fileName = 'УТО_позиции';
+            reason = 'Есть УТО (руб. или шт.)';
+            break;
+        case 'best':
+            items = data.filter(row => {
+                return (row["BEST гамма"] && row["BEST гамма"] !== "") || 
+                       (row["BEST NEXT"] && row["BEST NEXT"] !== "");
+            });
+            fileName = 'Бест_позиции';
+            reason = 'Признак "Бест" в гамме или NEXT';
+            break;
+        case 'min':
+            const tomorrow = getTomorrowDay();
+            items = data.filter(row => {
+                const days = String(row["Дни выхода заказа поставщика"] || "").trim();
+                return days === tomorrow;
+            });
+            fileName = 'Мины_заказ_завтра';
+            reason = `Заказ поставщика на ${tomorrow}`;
+            break;
+        case 'inTransit':
+            items = data.filter(row => {
+                const transitDays = toNumber(row["В пути, дн."], 0);
+                return transitDays > 0;
+            });
+            fileName = 'В_пути';
+            reason = 'Товар в пути (>0 дней)';
+            break;
+        default:
+            showToast('Неизвестный тип карточки', 'error');
+            return;
+    }
+    
+    if (items.length === 0) {
+        showToast('Нет данных для экспорта', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [
+        ["#", "Магазин", "Артикул", "Наименование", "Запас, дн.", "В пути, дн.", "УТО, руб.", "УТО, шт.", "Причина попадания"]
+    ];
+    
+    items.forEach((row, idx) => {
+        wsData.push([
+            idx + 1,
+            row["№ магазина"] || '',
+            row["Артикул"] || '',
+            row["Наименование"] || '',
+            row["Запас, дн."] || '',
+            row["В пути, дн."] || '',
+            row["УТО, руб."] || '',
+            row["УТО, шт."] || '',
+            reason
+        ]);
+    });
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, fileName);
+    
+    ws['!cols'] = [
+        { wch: 5 }, { wch: 12 }, { wch: 15 }, { wch: 35 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 40 }
+    ];
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const storeFilter = document.getElementById('storeFilter').value;
+    const storeSuffix = storeFilter !== 'all' ? `_магазин_${storeFilter}` : '';
+    link.download = `${fileName}${storeSuffix}_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружено ${items.length} артикулов (${reason})`, 'success');
 }
 
 // ==================== Отрисовка таблицы ====================
@@ -1604,9 +2592,11 @@ function renderFullTableWithFilter() {
                 input.placeholder = "0";
                 input.style.width = "100%";
                 input.style.padding = "1px 4px";
-                input.style.border = "1px solid #FFCF8A";
+                input.style.border = "1px solid var(--input-border)";
                 input.style.borderRadius = "4px";
                 input.style.fontSize = "0.6rem";
+                input.style.background = "var(--input-bg)";
+                input.style.color = "var(--text-primary)";
                 
                 input.addEventListener('change', function() {
                     const val = this.value;
@@ -1913,7 +2903,7 @@ function updateStatusDisplay(reportName, success) {
     document.getElementById('uploadSummary').innerHTML = `📁 Загружено: ${loadedCount} / 10 отчетов`;
 }
 
-// ==================== ЭКСПОРТ ИЗМЕНЕНИЙ (ВСЕ МАГАЗИНЫ) ====================
+// ==================== Экспорт изменений ====================
 async function exportChanges() {
     if (editedRows.size === 0) {
         showToast('Нет изменений для экспорта', 'warning');
@@ -1928,7 +2918,6 @@ async function exportChanges() {
         const exportData = [];
         const stores = new Set();
         
-        // Собираем все изменения по всем магазинам
         for (const [key, data] of editedRows) {
             const [store, art] = key.split('|');
             stores.add(store);
@@ -1960,7 +2949,6 @@ async function exportChanges() {
             return;
         }
         
-        // Создаем Excel файл
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('MIN_Custom_Все_магазины');
         
@@ -1969,7 +2957,6 @@ async function exportChanges() {
         headerRow.font = { bold: true };
         headerRow.alignment = { horizontal: "center", vertical: "middle" };
         
-        // Сортируем по магазину для удобства
         exportData.sort((a, b) => {
             if (a["Магазин"] !== b["Магазин"]) {
                 return parseInt(a["Магазин"]) - parseInt(b["Магазин"]);
@@ -1988,7 +2975,6 @@ async function exportChanges() {
             ]);
         }
         
-        // Настройка ширины колонок
         worksheet.getColumn(1).width = 15;
         worksheet.getColumn(2).width = 18;
         worksheet.getColumn(3).width = 15;
@@ -1996,7 +2982,6 @@ async function exportChanges() {
         worksheet.getColumn(5).width = 22;
         worksheet.getColumn(6).width = 22;
         
-        // Добавляем информационный лист со статистикой
         const infoSheet = workbook.addWorksheet('Информация');
         infoSheet.addRow(['Сводка по изменениям']);
         infoSheet.addRow(['Дата выгрузки:', new Date().toLocaleString()]);
@@ -2023,12 +3008,30 @@ async function exportChanges() {
         URL.revokeObjectURL(url);
         
         loadingDiv.style.display = 'none';
-        showToast(`✅ Выгружено ${exportData.length} изменений для ${stores.size} магазинов в файл "${fileName}"`, 'success');
+        showToast(`✅ Выгружено ${exportData.length} изменений для ${stores.size} магазинов`, 'success');
         
     } catch (error) {
         console.error(error);
         loadingDiv.style.display = 'none';
         showToast(`Ошибка: ${error.message}`, 'error');
+    }
+}
+
+// ==================== Сброс всех изменений ====================
+function resetAllChanges() {
+    const count = editedRows.size;
+    if (count === 0) {
+        showToast('Нет изменений для сброса', 'info');
+        return;
+    }
+    
+    if (confirm(`🗑️ Вы уверены, что хотите сбросить все ${count} изменений для всех магазинов?`)) {
+        editedRows.clear();
+        historyStack = [];
+        historyIndex = -1;
+        saveState();
+        renderFullTableWithFilter();
+        showToast(`✅ Сброшено ${count} изменений`, 'success');
     }
 }
 
@@ -2099,7 +3102,9 @@ function generateColumnToggles() {
 // ==================== Фильтрация по артикулам ====================
 function applyArticleFilter() {
     const inputValue = document.getElementById('articleSearchInput').value.trim();
-    if (!inputValue) {
+    const nameValue = document.getElementById('nameSearchInput').value.trim();
+    
+    if (!inputValue && !nameValue) {
         if (articleFilterList && articleFilterList.size > 0) {
             scheduleFilter();
             return;
@@ -2110,30 +3115,34 @@ function applyArticleFilter() {
         return;
     }
     
-    const storeFilterValue = document.getElementById('storeFilter').value;
-    if (storeFilterValue === 'all') {
-        showToast('Сначала выберите магазин!', 'warning');
-        return;
+    if (inputValue) {
+        const storeFilterValue = document.getElementById('storeFilter').value;
+        if (storeFilterValue === 'all') {
+            showToast('Сначала выберите магазин!', 'warning');
+            return;
+        }
+        
+        let articles = inputValue.split(/[,\s\n]+/).filter(a => a.trim());
+        articles = articles.map(a => a.replace(/[^\d]/g, '')).filter(a => a && a.length >= 4);
+        if (articles.length === 0) {
+            showToast('Введите корректные артикулы (только цифры)', 'warning');
+            return;
+        }
+        articleFilterList = new Set(articles);
+        document.getElementById('articleListPreview').innerHTML = `🔍 Поиск: ${articles.slice(0, 5).join(', ')}${articles.length > 5 ? '...' : ''} (${articles.length} арт.)`;
     }
     
-    let articles = inputValue.split(/[,\s\n]+/).filter(a => a.trim());
-    articles = articles.map(a => a.replace(/[^\d]/g, '')).filter(a => a && a.length >= 4);
-    if (articles.length === 0) {
-        showToast('Введите корректные артикулы (только цифры)', 'warning');
-        return;
-    }
-    articleFilterList = new Set(articles);
-    document.getElementById('articleListPreview').innerHTML = `🔍 Поиск: ${articles.slice(0, 5).join(', ')}${articles.length > 5 ? '...' : ''} (${articles.length} арт.)`;
     scheduleFilter();
-    showToast(`🔍 Применен фильтр по ${articles.length} артикулам`, 'info');
+    showToast(`🔍 Применен фильтр`, 'info');
 }
 
 function clearArticleFilter() {
     articleFilterList = null;
     document.getElementById('articleSearchInput').value = '';
+    document.getElementById('nameSearchInput').value = '';
     document.getElementById('articleListPreview').innerHTML = '';
     scheduleFilter();
-    showToast('🗑️ Фильтр по артикулам очищен', 'info');
+    showToast('🗑️ Все фильтры очищены', 'info');
 }
 
 function loadArticleListFromFile() {
@@ -2420,129 +3429,195 @@ function buildCascade() {
     });
 }
 
-// ==================== Инициализация ====================
-const leftPanel = document.getElementById("leftPanel");
-document.getElementById("collapsePanelBtn")?.addEventListener("click", () => { 
-    leftPanel.classList.add("collapsed"); 
-    saveState();
-});
-document.getElementById("expandPanelBtnGlobal")?.addEventListener("click", () => { 
-    leftPanel.classList.remove("collapsed"); 
-    saveState();
-});
-document.getElementById("autoLoadFolderBtn")?.addEventListener("click", () => selectFolder());
-document.getElementById("autoLoadResultHeader")?.addEventListener("click", () => toggleAutoLoadResult());
-
-document.getElementById("toggleModeBtn")?.addEventListener("click", () => toggleMode());
-document.getElementById("exportChangesBtn")?.addEventListener("click", () => exportChanges());
-document.getElementById("resetChangesBtn")?.addEventListener("click", () => resetAllChanges());
-
-document.getElementById("filterAllBtn")?.addEventListener("click", () => applyQuickFilter('all'));
-document.getElementById("filterUtoBtn")?.addEventListener("click", () => applyQuickFilter('uto'));
-document.getElementById("filterBestBtn")?.addEventListener("click", () => applyQuickFilter('best'));
-document.getElementById("filterMinBtn")?.addEventListener("click", () => applyQuickFilter('min'));
-
-document.getElementById("applyArticleFilterBtn")?.addEventListener("click", () => applyArticleFilter());
-document.getElementById("clearArticleFilterBtn")?.addEventListener("click", () => clearArticleFilter());
-document.getElementById("loadArticleListBtn")?.addEventListener("click", () => loadArticleListFromFile());
-document.getElementById("articleSearchInput")?.addEventListener("keypress", (e) => {
-    if (e.key === 'Enter') applyArticleFilter();
-});
-
-document.getElementById("storeFilter")?.addEventListener("change", function() { 
-    if (cachedData.fullData.length) scheduleFilter();
-    else computeSummaryAsync();
-});
-document.getElementById("departmentFilter")?.addEventListener("change", function() { 
-    if (cachedData.fullData.length) scheduleFilter();
-    else computeSummaryAsync();
-});
-document.getElementById("subdepartmentFilter")?.addEventListener("change", function() { 
-    if (cachedData.fullData.length) scheduleFilter();
-    else computeSummaryAsync();
-});
-
-document.getElementById("topFilter")?.addEventListener("change", function() { scheduleFilter(); });
-
-document.getElementById("stockMinInput")?.addEventListener("input", function() { 
-    updateRangeLabels(); 
-    scheduleFilter(); 
-});
-document.getElementById("stockMaxInput")?.addEventListener("input", function() { 
-    updateRangeLabels(); 
-    scheduleFilter(); 
-});
-document.getElementById("transitMinInput")?.addEventListener("input", function() { 
-    updateRangeLabels(); 
-    scheduleFilter(); 
-});
-document.getElementById("transitMaxInput")?.addEventListener("input", function() { 
-    updateRangeLabels(); 
-    scheduleFilter(); 
-});
-
-const toggleMainBtn = document.getElementById("toggleReportsCascadeBtn");
-const reportsDiv = document.getElementById("reportsCascadeContainer");
-let mainOpen = false;
-if (toggleMainBtn && reportsDiv) {
-    toggleMainBtn.addEventListener("click", () => { 
-        mainOpen = !mainOpen; 
-        reportsDiv.classList.toggle("open", mainOpen); 
-        toggleMainBtn.innerHTML = mainOpen ? "📂 Загрузить Excel-отчеты ▲" : "📂 Загрузить Excel-отчеты ▼"; 
-    });
-}
-
-const toggleLinksBtn = document.getElementById("togglePowerBiLinksBtn");
-const linksDiv = document.getElementById("powerbiLinksContainer");
-let linksOpen = false;
-if (toggleLinksBtn && linksDiv) {
-    toggleLinksBtn.addEventListener("click", () => { 
-        linksOpen = !linksOpen; 
-        linksDiv.classList.toggle("open", linksOpen); 
-        toggleLinksBtn.innerHTML = linksOpen ? "📊 Отчеты Power BI ▲" : "📊 Отчеты Power BI ▼"; 
-    });
-}
-
-document.getElementById("computeSummaryBtn")?.addEventListener("click", () => computeSummaryAsync());
-document.getElementById("exportMasterBtn")?.addEventListener("click", () => exportAllData());
-
-document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        undoEdit();
+// ==================== Управление вкладками ====================
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+    
+    if (tabId === 'analytics' && cachedData.fullData.length) {
+        updateAnalytics(filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData);
     }
-});
+}
 
-// Восстанавливаем состояние
-if (appState.leftPanelCollapsed) {
-    leftPanel.classList.add('collapsed');
-}
-if (appState.isOnlineMode) {
-    toggleMode();
-}
-if (appState.activeQuickFilter && appState.activeQuickFilter !== 'all') {
-    applyQuickFilter(appState.activeQuickFilter);
-}
-if (appState.stockMin !== undefined) {
-    document.getElementById('stockMinInput').value = appState.stockMin;
-    document.getElementById('stockMaxInput').value = appState.stockMax;
-    document.getElementById('transitMinInput').value = appState.transitMin;
-    document.getElementById('transitMaxInput').value = appState.transitMax;
+// ==================== Инициализация ====================
+document.addEventListener('DOMContentLoaded', function() {
+    if (!appState.alertsEnabled) {
+        alertsEnabled = false;
+        document.getElementById('alertToggleBtn').textContent = '🔔 Включить';
+        document.getElementById('alertToggleBtn').style.background = 'rgba(255,255,255,0.3)';
+    }
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            switchTab(this.dataset.tab);
+        });
+    });
+    
+    document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+    document.getElementById('alertToggleBtn').addEventListener('click', toggleAlerts);
+    
+    const leftPanel = document.getElementById('leftPanel');
+    document.getElementById('collapsePanelBtn').addEventListener('click', () => { 
+        leftPanel.classList.add('collapsed'); 
+        saveState();
+    });
+    document.getElementById('expandPanelBtnGlobal').addEventListener('click', () => { 
+        leftPanel.classList.remove('collapsed'); 
+        saveState();
+    });
+    
+    document.getElementById('autoLoadFolderBtn').addEventListener('click', () => selectFolder());
+    document.getElementById('autoLoadResultHeader').addEventListener('click', () => toggleAutoLoadResult());
+    
+    document.getElementById('toggleModeBtn').addEventListener('click', () => toggleMode());
+    document.getElementById('exportChangesBtn').addEventListener('click', () => exportChanges());
+    document.getElementById('resetChangesBtn').addEventListener('click', () => resetAllChanges());
+    
+    document.getElementById('filterAllBtn').addEventListener('click', () => applyQuickFilter('all'));
+    document.getElementById('filterUtoBtn').addEventListener('click', () => applyQuickFilter('uto'));
+    document.getElementById('filterBestBtn').addEventListener('click', () => applyQuickFilter('best'));
+    document.getElementById('filterMinBtn').addEventListener('click', () => applyQuickFilter('min'));
+    
+    document.getElementById('applyArticleFilterBtn').addEventListener('click', () => applyArticleFilter());
+    document.getElementById('clearArticleFilterBtn').addEventListener('click', () => clearArticleFilter());
+    document.getElementById('loadArticleListBtn').addEventListener('click', () => loadArticleListFromFile());
+    document.getElementById('articleSearchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') applyArticleFilter();
+    });
+    document.getElementById('nameSearchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') applyArticleFilter();
+    });
+    document.getElementById('nameSearchInput').addEventListener('input', () => {
+        scheduleFilter();
+    });
+    
+    document.getElementById('storeFilter').addEventListener('change', function() { 
+        if (cachedData.fullData.length) scheduleFilter();
+        else computeSummaryAsync();
+    });
+    document.getElementById('departmentFilter').addEventListener('change', function() { 
+        if (cachedData.fullData.length) scheduleFilter();
+        else computeSummaryAsync();
+    });
+    document.getElementById('subdepartmentFilter').addEventListener('change', function() { 
+        if (cachedData.fullData.length) scheduleFilter();
+        else computeSummaryAsync();
+    });
+    document.getElementById('topFilter').addEventListener('change', function() { scheduleFilter(); });
+    
+    document.getElementById('stockMinInput').addEventListener('input', function() { 
+        updateRangeLabels(); 
+        scheduleFilter(); 
+    });
+    document.getElementById('stockMaxInput').addEventListener('input', function() { 
+        updateRangeLabels(); 
+        scheduleFilter(); 
+    });
+    document.getElementById('transitMinInput').addEventListener('input', function() { 
+        updateRangeLabels(); 
+        scheduleFilter(); 
+    });
+    document.getElementById('transitMaxInput').addEventListener('input', function() { 
+        updateRangeLabels(); 
+        scheduleFilter(); 
+    });
+    
+    const toggleMainBtn = document.getElementById('toggleReportsCascadeBtn');
+    const reportsDiv = document.getElementById('reportsCascadeContainer');
+    let mainOpen = false;
+    if (toggleMainBtn && reportsDiv) {
+        toggleMainBtn.addEventListener('click', () => { 
+            mainOpen = !mainOpen; 
+            reportsDiv.classList.toggle('open', mainOpen); 
+            toggleMainBtn.innerHTML = mainOpen ? "📂 Загрузить Excel-отчеты ▲" : "📂 Загрузить Excel-отчеты ▼"; 
+        });
+    }
+    
+    const toggleLinksBtn = document.getElementById('togglePowerBiLinksBtn');
+    const linksDiv = document.getElementById('powerbiLinksContainer');
+    let linksOpen = false;
+    if (toggleLinksBtn && linksDiv) {
+        toggleLinksBtn.addEventListener('click', () => { 
+            linksOpen = !linksOpen; 
+            linksDiv.classList.toggle('open', linksOpen); 
+            toggleLinksBtn.innerHTML = linksOpen ? "📊 Отчеты Power BI ▲" : "📊 Отчеты Power BI ▼"; 
+        });
+    }
+    
+    document.getElementById('computeSummaryBtn').addEventListener('click', () => computeSummaryAsync());
+    document.getElementById('exportMasterBtn').addEventListener('click', () => exportAllData());
+    document.getElementById('refreshAnalyticsBtn').addEventListener('click', () => {
+        if (cachedData.fullData.length) {
+            updateAnalytics(filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData);
+            showToast('🔄 Аналитика обновлена', 'info');
+        }
+    });
+    
+    window.exportArticles = exportArticles;
+    window.exportTopItems = exportTopItems;
+    window.exportAllItems = exportAllItems;
+    window.toggleAlerts = toggleAlerts;
+    window.exportCardData = exportCardData;
+    
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+            e.preventDefault();
+            undoEdit();
+        }
+        if (e.key === 'F1') {
+            e.preventDefault();
+            switchTab('analytics');
+            showToast('📊 Переключено на вкладку "Аналитика"', 'info');
+        }
+        if (e.key === 'F2') {
+            e.preventDefault();
+            switchTab('table');
+            showToast('📋 Переключено на вкладку "Таблица"', 'info');
+        }
+        if (e.key === 'F5' && !e.ctrlKey) {
+            e.preventDefault();
+            if (cachedData.fullData.length) {
+                updateAnalytics(filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData);
+                showToast('🔄 Аналитика обновлена', 'info');
+            }
+        }
+    });
+    
+    if (appState.leftPanelCollapsed) {
+        leftPanel.classList.add('collapsed');
+    }
+    if (appState.isOnlineMode) {
+        toggleMode();
+    }
+    if (appState.activeQuickFilter && appState.activeQuickFilter !== 'all') {
+        applyQuickFilter(appState.activeQuickFilter);
+    }
+    if (appState.stockMin !== undefined) {
+        document.getElementById('stockMinInput').value = appState.stockMin;
+        document.getElementById('stockMaxInput').value = appState.stockMax;
+        document.getElementById('transitMinInput').value = appState.transitMin;
+        document.getElementById('transitMaxInput').value = appState.transitMax;
+        updateRangeLabels();
+    }
+    
     updateRangeLabels();
-}
-
-updateRangeLabels();
-buildCascade();
-renderFullTableWithFilter();
-generateColumnToggles();
-
-console.log('📌 Приложение готово!');
-console.log('📥 Кнопка "ВЫГРУЗИТЬ MIN Custom (ВСЕ МАГАЗИНЫ)" - экспортирует все изменения по всем магазинам');
-console.log('🗑️ Кнопка "Сбросить все изменения" - очищает все правки');
-console.log('📋 Быстрые фильтры: УТО, Бест, Мины');
-console.log('🎨 Точечная подсветка: УТО только в колонках с УТО');
-console.log('🌈 Градиентная заливка по дням');
-console.log('⌨️ Ctrl+Z - отмена последнего действия');
+    buildCascade();
+    renderFullTableWithFilter();
+    generateColumnToggles();
+    
+    console.log('📌 Приложение готово!');
+    console.log('📊 Вкладка "Аналитика" - полная статистика с учетом поставок');
+    console.log('🔍 Поиск по наименованию товара');
+    console.log('🌙 Тёмная тема с переключением');
+    console.log('⚠️ Оповещения о критических товарах без поставки (<3 дн)');
+    console.log('📤 Экспорт ТОП-10 и ВСЕХ артикулов из аналитики');
+    console.log('🖱️ Клик на карточку - выгрузка всех артикулов категории');
+    console.log('🔕 Отключение уведомлений при смене фильтров');
+    console.log('⌨️ F1 - Аналитика, F2 - Таблица, F5 - Обновить аналитику');
+});
 </script>
 </body>
 </html>
