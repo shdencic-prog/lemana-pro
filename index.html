@@ -755,6 +755,41 @@
             border-left: 3px solid #FF8C00;
         }
         
+        /* Стили для кнопок MagPortal */
+        .magportal-btn {
+            background: rgba(255,140,0,0.12);
+            border: 1px solid #FF8C00;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 9px;
+            padding: 1px 6px;
+            color: #FF8C00;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+        .magportal-btn:hover {
+            background: #FF8C00;
+            color: white;
+        }
+        
+        .article-link {
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: background 0.2s;
+            color: var(--text-primary);
+        }
+        .article-link:hover {
+            background: rgba(255,140,0,0.12);
+        }
+        .article-link.edited {
+            color: #1976d2;
+            font-weight: 700;
+        }
+        
         footer { margin-top: 20px; text-align: center; font-size: 0.6rem; border-top: 2px solid var(--border-color); padding-top: 12px; color: var(--text-muted); }
         .info-note { font-size: 0.55rem; color: var(--text-muted); margin-top: 4px; }
         .right-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
@@ -913,7 +948,7 @@
             <button id="helpModalClose" class="modal-close">✕</button>
             
             <h2>📊 STOCKWISE</h2>
-            <div class="subtitle">Сводный аналитический инструмент</div>
+            <div class="subtitle">Умный анализ запасов</div>
             
             <div class="help-section">
                 <h3>🎯 Что это?</h3>
@@ -977,6 +1012,15 @@
                         <li>Из аналитики — выгрузка ТОП-10 или ВСЕХ товаров по категории</li>
                     </ul>
                 </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">7. 🏪 Быстрый переход в MagPortal</strong>
+                    <ul>
+                        <li><strong>Двойной клик</strong> по строке или артикулу — открывается карточка товара</li>
+                        <li><strong>Кнопка 🏪</strong> рядом с артикулом — открытие в MagPortal</li>
+                        <li><strong>Enter</strong> при наведении на строку — открытие в MagPortal</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="help-section">
@@ -999,6 +1043,7 @@
                     <tr><td><kbd>F2</kbd></td><td>Переключиться на вкладку "Таблица"</td></tr>
                     <tr><td><kbd>F5</kbd></td><td>Обновить аналитику</td></tr>
                     <tr><td><kbd>Ctrl+Z</kbd></td><td>Отменить последнее действие</td></tr>
+                    <tr><td><kbd>Enter</kbd></td><td>Открыть товар в MagPortal (при наведении на строку)</td></tr>
                 </table>
             </div>
 
@@ -1195,6 +1240,7 @@
                     <span class="legend-item"><span class="legend-color" style="background:#fff3e0;border-color:#FF8C00;"></span> Наибольший резерв MIN</span>
                     <span class="legend-item"><span class="legend-color" style="background:#fffde7;"></span> Редактируемые</span>
                     <span class="legend-item"><span class="legend-color" style="background:#e3f2fd;border-color:#1976d2;"></span> Изменено</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#FF8C00;border-color:#FF8C00;border-radius:50%;width:10px;height:10px;"></span> 🏪 MagPortal</span>
                 </div>
                 
                 <div id="uploadSummary" class="upload-summary">📁 Загружено: 0 / 10 отчетов</div>
@@ -1367,6 +1413,30 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
+// ==================== Открытие товара в MagPortal ====================
+function openProductInMagPortal(article) {
+    if (!article) {
+        showToast('❌ Артикул не указан', 'warning');
+        return;
+    }
+
+    // Очищаем от лишних символов, оставляем только цифры
+    const cleanArticle = String(article).replace(/[^\d]/g, '');
+    if (!cleanArticle || cleanArticle.length < 4) {
+        showToast(`❌ Некорректный артикул: ${article}`, 'warning');
+        return;
+    }
+
+    const url = `https://magportal.lemanapro.ru/catalogproducts/product/${cleanArticle}`;
+    
+    try {
+        window.open(url, '_blank');
+        showToast(`🔗 Открываем артикул ${cleanArticle} в MagPortal`, 'info', 1500);
+    } catch (e) {
+        showToast(`❌ Не удалось открыть: ${e.message}`, 'error');
+    }
+}
+
 // ==================== Управление модальным окном инструкции ====================
 function toggleHelpModal(show) {
     const modal = document.getElementById('helpModal');
@@ -1429,7 +1499,7 @@ const MAX_HISTORY = 50;
 let criticalAlertShown = false;
 
 // ==================== Состояние ====================
-const STATE_KEY = 'lemana_pro_state';
+const STATE_KEY = 'stockwise_state';
 let appState = loadState();
 
 function loadState() {
@@ -2879,6 +2949,19 @@ function renderFullTableWithFilter() {
         if (hasBest) tr.classList.add('best-row');
         if (hasMin) tr.classList.add('min-row');
         
+        // ===== Двойной клик для открытия в MagPortal =====
+        tr.addEventListener('dblclick', function(e) {
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) {
+                return;
+            }
+            const article = row["Артикул"];
+            if (article) {
+                openProductInMagPortal(article);
+            }
+        });
+        tr.style.cursor = 'pointer';
+        tr.title = 'Двойной клик — открыть в MagPortal';
+        
         visibleCols.forEach(col => {
             const td = document.createElement("td");
             
@@ -2945,6 +3028,34 @@ function renderFullTableWithFilter() {
                 
                 td.appendChild(input);
                 td.classList.add('editable');
+                
+            } else if (col === "Артикул") {
+                const article = row["Артикул"] || '';
+                const rowKey = `${row["№ магазина"]}|${article}`;
+                const isEdited = editedRows.has(rowKey);
+                
+                td.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap; min-width:90px;">
+                        <span style="font-weight:${isEdited ? '700' : '600'}; 
+                                     color:${isEdited ? '#1976d2' : 'var(--text-primary)'};
+                                     font-size:0.7rem;
+                                     cursor:pointer;
+                                     padding:2px 4px;
+                                     border-radius:3px;
+                                     transition:background 0.2s;"
+                              title="Двойной клик — открыть в MagPortal"
+                              onmouseover="this.style.background='rgba(255,140,0,0.12)'"
+                              onmouseout="this.style.background='transparent'"
+                              ondblclick="openProductInMagPortal('${article}')">
+                            ${article}
+                        </span>
+                        <button onclick="openProductInMagPortal('${article}')" 
+                                class="magportal-btn"
+                                title="Открыть в MagPortal">
+                            🏪
+                        </button>
+                    </div>
+                `;
                 
             } else {
                 let value = row[col];
@@ -3634,7 +3745,7 @@ async function exportAllData() {
     document.getElementById('loadingText').innerText = 'Формируем Excel...';
     try {
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Сводная Лемана');
+        const worksheet = workbook.addWorksheet('Сводная STOCKWISE');
         worksheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 1 }];
         
         const headerRow = worksheet.addRow(FULL_COLUMNS);
@@ -3690,7 +3801,7 @@ async function exportAllData() {
         
         const storeFilter = document.getElementById('storeFilter').value;
         const filterInfo = articleFilterList && articleFilterList.size > 0 ? `_фильтр_${articleFilterList.size}_арт` : '';
-        const fileName = storeFilter !== 'all' ? `Lemana_магазин_${storeFilter}${filterInfo}_${dataToExport.length}_товаров.xlsx` : `Lemana_свод${filterInfo}_${dataToExport.length}_товаров.xlsx`;
+        const fileName = storeFilter !== 'all' ? `STOCKWISE_магазин_${storeFilter}${filterInfo}_${dataToExport.length}_товаров.xlsx` : `STOCKWISE_свод${filterInfo}_${dataToExport.length}_товаров.xlsx`;
         link.download = fileName;
         document.body.appendChild(link);
         link.click();
@@ -3811,6 +3922,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('🔄 Аналитика обновлена', 'info');
             }
         }
+        // ===== Горячая клавиша Enter для открытия в MagPortal =====
+        if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+            const hoveredRow = document.querySelector('.full-table tbody tr:hover');
+            if (hoveredRow) {
+                const cells = hoveredRow.querySelectorAll('td');
+                if (cells.length >= 2) {
+                    const articleCell = cells[1];
+                    const articleText = articleCell.textContent.trim();
+                    const articleMatch = articleText.match(/\d+/);
+                    if (articleMatch) {
+                        const article = articleMatch[0];
+                        if (article && article.length >= 4) {
+                            e.preventDefault();
+                            openProductInMagPortal(article);
+                        }
+                    }
+                }
+            }
+        }
     });
     
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -3924,6 +4054,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.exportAllItems = exportAllItems;
     window.toggleAlerts = toggleAlerts;
     window.exportCardData = exportCardData;
+    window.openProductInMagPortal = openProductInMagPortal;
     
     if (appState.leftPanelCollapsed) {
         leftPanel.classList.add('collapsed');
@@ -3947,15 +4078,10 @@ document.addEventListener('DOMContentLoaded', function() {
     renderFullTableWithFilter();
     generateColumnToggles();
     
-    console.log('📌 Приложение готово!');
-    console.log('📊 Вкладка "Аналитика" - полная статистика с учетом поставок');
-    console.log('🔍 Поиск по наименованию товара');
-    console.log('🌙 Тёмная тема с переключением');
-    console.log('⚠️ Оповещения о критических товарах без поставки (<3 дн)');
-    console.log('📤 Экспорт ТОП-10 и ВСЕХ артикулов из аналитики');
-    console.log('🖱️ Клик на карточку - выгрузка всех артикулов категории');
-    console.log('🔕 Отключение уведомлений при смене фильтров');
-    console.log('⌨️ F1 - Аналитика, F2 - Таблица, F5 - Обновить аналитику');
+    console.log('📌 STOCKWISE готов!');
+    console.log('📊 Умный анализ запасов');
+    console.log('🏪 Двойной клик или Enter → MagPortal');
+    console.log('⌨️ F1 - Аналитика, F2 - Таблица, F5 - Обновить');
     console.log('❓ Кнопка "Инструкция" для быстрого ознакомления');
 });
 </script>
