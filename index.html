@@ -790,6 +790,61 @@
             font-weight: 700;
         }
         
+        /* Фильтр-чекбоксы для ошибок */
+        .filter-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            background: var(--bg-card);
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+            transition: 0.2s;
+            color: var(--text-primary);
+        }
+        .filter-checkbox:hover {
+            border-color: #FF8C00;
+        }
+        .filter-checkbox input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: #FF8C00;
+        }
+        
+        /* Баннер сброса фильтров */
+        .search-filter-status {
+            display: none;
+            background: var(--warning-bg);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.55rem;
+            margin-top: 4px;
+            color: #e65100;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .search-filter-status.show { display: flex; }
+        .search-filter-status .restore-btn {
+            background: rgba(255,140,0,0.15);
+            border: 1px solid #FF8C00;
+            border-radius: 12px;
+            color: #FF8C00;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.55rem;
+            padding: 1px 10px;
+            transition: 0.2s;
+        }
+        .search-filter-status .restore-btn:hover {
+            background: #FF8C00;
+            color: #1e1e1e;
+        }
+        
         footer { margin-top: 20px; text-align: center; font-size: 0.6rem; border-top: 2px solid var(--border-color); padding-top: 12px; color: var(--text-muted); }
         .info-note { font-size: 0.55rem; color: var(--text-muted); margin-top: 4px; }
         .right-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
@@ -924,6 +979,8 @@
             .help-grid { grid-template-columns: 1fr; }
             .modal-content { padding: 20px 18px; }
             .modal-content h2 { font-size: 1.4rem; }
+            .filter-checkbox { font-size: 0.55rem; padding: 2px 8px; }
+            .search-filter-status { font-size: 0.5rem; }
         }
     </style>
 </head>
@@ -971,6 +1028,8 @@
                     <ul>
                         <li>Нажмите <strong>"ВЫЧИСЛИТЬ"</strong> — и все данные объединятся в одну таблицу</li>
                         <li>Система автоматически: рассчитывает запас в днях, определяет критические позиции (&lt;7 дней), выделяет УТО-позиции, отмечает Бест-товары, показывает товары в пути</li>
+                        <li>Пустые ячейки заменяются на 0 для корректных расчётов</li>
+                        <li>Если товар есть, но продаж нет — запас = 999 дней</li>
                     </ul>
                 </div>
                 
@@ -981,6 +1040,7 @@
                         <li>По диапазону дней (запас, в пути)</li>
                         <li>По ТОП (1, 2, 0)</li>
                         <li>Поиск по артикулу и наименованию</li>
+                        <li><strong>При поиске по артикулу фильтры автоматически сбрасываются</strong> (кроме магазина)</li>
                     </ul>
                 </div>
                 
@@ -1021,6 +1081,17 @@
                         <li><strong>Enter</strong> при наведении на строку — открытие в MagPortal</li>
                     </ul>
                 </div>
+                
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#FF8C00;">8. 🚨 Вкладка "Аномалии"</strong>
+                    <ul>
+                        <li>Автоматическое сканирование 3 типов ошибок</li>
+                        <li>Фильтр по типу ошибки</li>
+                        <li>Кнопка <strong>"Предложить исправления"</strong> с модальным окном</li>
+                        <li>Статистика ошибок по магазинам</li>
+                        <li>Выгрузка рекомендаций для поставщиков</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="help-section">
@@ -1033,6 +1104,7 @@
                     <div class="lg-item"><span class="lg-color" style="background:#7b1fa2;"></span> УТО-позиции</div>
                     <div class="lg-item"><span class="lg-color" style="background:#f9a825;"></span> Бест-позиции</div>
                     <div class="lg-item"><span class="lg-color" style="background:#1e88e5;"></span> Товары в пути</div>
+                    <div class="lg-item"><span class="lg-color" style="background:#FF8C00;border-radius:50%;width:10px;height:10px;"></span> 🏪 MagPortal</div>
                 </div>
             </div>
 
@@ -1041,6 +1113,7 @@
                 <table class="hotkeys-table">
                     <tr><td><kbd>F1</kbd></td><td>Переключиться на вкладку "Аналитика"</td></tr>
                     <tr><td><kbd>F2</kbd></td><td>Переключиться на вкладку "Таблица"</td></tr>
+                    <tr><td><kbd>F3</kbd></td><td>Переключиться на вкладку "Аномалии"</td></tr>
                     <tr><td><kbd>F5</kbd></td><td>Обновить аналитику</td></tr>
                     <tr><td><kbd>Ctrl+Z</kbd></td><td>Отменить последнее действие</td></tr>
                     <tr><td><kbd>Enter</kbd></td><td>Открыть товар в MagPortal (при наведении на строку)</td></tr>
@@ -1055,18 +1128,8 @@
                     <li>Фильтруете по нужному магазину или отделу</li>
                     <li>Переходите в <strong>"Аналитику"</strong> — видите проблемные зоны</li>
                     <li>Редактируете минимумы в онлайн-режиме</li>
-                    <li>Выгружаете изменения для поставщиков</li>
-                </ul>
-            </div>
-
-            <div class="help-section">
-                <h3>❓ Частые вопросы</h3>
-                <ul>
-                    <li><strong>Нужно ли устанавливать что-то на компьютер?</strong> — Нет, это веб-приложение — открываете в браузере и работаете.</li>
-                    <li><strong>Какие браузеры поддерживаются?</strong> — Chrome, Edge, Opera (рекомендуем последние версии).</li>
-                    <li><strong>Что делать, если отчет не загружается?</strong> — Проверьте, что файл имеет формат .xlsx или .xls, и он не открыт в другой программе.</li>
-                    <li><strong>Сохраняются ли мои изменения после обновления страницы?</strong> — Да, все изменения сохраняются в браузере.</li>
-                    <li><strong>Можно ли работать с инструментом на телефоне/планшете?</strong> — Да, интерфейс адаптивный.</li>
+                    <li>Переходите в <strong>"Аномалии"</strong> — сканируете ошибки</li>
+                    <li>Применяете исправления и выгружаете рекомендации</li>
                 </ul>
             </div>
 
@@ -1204,6 +1267,13 @@
                     <button id="loadArticleListBtn" class="secondary-btn" style="margin-top:0;">📂 Загрузить файл</button>
                     <div id="articleListPreview" class="article-list-preview"></div>
                 </div>
+                
+                <!-- Баннер сброса фильтров -->
+                <div id="searchFilterStatus" class="search-filter-status">
+                    <span>🔍 Фильтры сброшены для поиска. <span id="searchFilterStore">Магазин сохранён</span></span>
+                    <button class="restore-btn" onclick="restoreFilters()">↩️ Восстановить фильтры</button>
+                </div>
+                
                 <div class="search-buttons">
                     <button id="applyArticleFilterBtn">🔍 Применить</button>
                     <button id="clearArticleFilterBtn">🗑️ Очистить</button>
@@ -1216,6 +1286,7 @@
             <div class="tabs-container">
                 <button class="tab-btn active" data-tab="table">📋 Таблица</button>
                 <button class="tab-btn" data-tab="analytics">📊 Аналитика</button>
+                <button class="tab-btn" data-tab="alerts">🚨 Аномалии</button>
             </div>
 
             <!-- ===== Вкладка "Таблица" ===== -->
@@ -1240,7 +1311,7 @@
                     <span class="legend-item"><span class="legend-color" style="background:#fff3e0;border-color:#FF8C00;"></span> Наибольший резерв MIN</span>
                     <span class="legend-item"><span class="legend-color" style="background:#fffde7;"></span> Редактируемые</span>
                     <span class="legend-item"><span class="legend-color" style="background:#e3f2fd;border-color:#1976d2;"></span> Изменено</span>
-                    <span class="legend-item"><span class="legend-color" style="background:#FF8C00;border-color:#FF8C00;border-radius:50%;width:10px;height:10px;"></span> 🏪 MagPortal</span>
+                    <span class="legend-item"><span class="legend-color" style="background:#FF8C00;border-radius:50%;width:10px;height:10px;"></span> 🏪 MagPortal</span>
                 </div>
                 
                 <div id="uploadSummary" class="upload-summary">📁 Загружено: 0 / 10 отчетов</div>
@@ -1380,6 +1451,145 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ===== Вкладка "Аномалии" ===== -->
+            <div id="tab-alerts" class="tab-content">
+                <div class="right-header">
+                    <h3>🚨 STOCKWISE Alert — Аномалии и рекомендации</h3>
+                    <div class="action-buttons">
+                        <button id="scanAlertsBtn" class="btn-compute">🔍 Сканировать</button>
+                        <button id="exportAllAlertsBtn" class="btn-excel-export">⬇️ ВЫГРУЗИТЬ ВСЕ</button>
+                    </div>
+                </div>
+                
+                <div id="alertSummary" class="stats-badge" style="display:none;">
+                    🔍 Найдено: <span id="totalAlerts">0</span> аномалий
+                </div>
+                
+                <!-- Карточки аномалий -->
+                <div class="analytics-grid" id="alertStatsCards">
+                    <div class="stat-card danger" id="alertOverstock">
+                        <div class="stat-value" id="alertOverstockValue">0</div>
+                        <div class="stat-label">🔴 Перезапас (избыток)</div>
+                        <div class="stat-hint">📤 Кликните для выгрузки</div>
+                    </div>
+                    <div class="stat-card warning" id="alertDeficit">
+                        <div class="stat-value" id="alertDeficitValue">0</div>
+                        <div class="stat-label">🟡 Дефицит (риск)</div>
+                        <div class="stat-hint">📤 Кликните для выгрузки</div>
+                    </div>
+                    <div class="stat-card purple" id="alertErrors">
+                        <div class="stat-value" id="alertErrorsValue">0</div>
+                        <div class="stat-label">🟣 Ошибки в настройках</div>
+                        <div class="stat-hint">📤 Кликните для выгрузки</div>
+                    </div>
+                    <div class="stat-card info" id="alertCritical">
+                        <div class="stat-value" id="alertCriticalValue">0</div>
+                        <div class="stat-label">🔴 Критические (дефицит + УТО)</div>
+                        <div class="stat-hint">📤 Кликните для выгрузки</div>
+                    </div>
+                </div>
+                
+                <!-- Фильтры ошибок -->
+                <div class="filters-area" style="min-height:auto; padding:10px 14px; margin:8px 0;">
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+                        <span style="font-weight:700; font-size:0.7rem; color:var(--text-secondary);">🔍 Фильтр ошибок:</span>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="error-filter" data-type="min441" checked>
+                            MIN 441 > Вместимость
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="error-filter" data-type="min401" checked>
+                            Новинка без MIN 401
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="error-filter" data-type="zapas" checked>
+                            Запас > Вместимость
+                        </label>
+                        <button id="clearErrorFiltersBtn" class="secondary-btn" style="width:auto; padding:2px 14px; margin:0; font-size:0.6rem;">
+                            🗑️ Снять все
+                        </button>
+                        <button id="suggestFixesBtn" style="background:#2c5f2d; color:white; border:none; border-radius:20px; padding:2px 14px; font-size:0.6rem; font-weight:600; cursor:pointer;">
+                            💡 Предложить исправления
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Статистика ошибок по магазинам -->
+                <div class="analytics-section">
+                    <h4>📊 Статистика ошибок по магазинам</h4>
+                    <div class="top-table-wrapper" style="max-height:200px;">
+                        <table class="top-table" id="errorStatsTable">
+                            <thead>
+                                <tr>
+                                    <th>Магазин</th>
+                                    <th>MIN 441 > Вместимость</th>
+                                    <th>Новинка без MIN 401</th>
+                                    <th>Запас > Вместимость</th>
+                                    <th>Всего ошибок</th>
+                                </tr>
+                            </thead>
+                            <tbody id="errorStatsBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="errorStatsSummary" style="font-size:0.6rem; color:var(--text-muted); margin-top:6px; text-align:center;"></div>
+                </div>
+                
+                <!-- ТОП-10 Перезапас -->
+                <div class="analytics-section">
+                    <h4>🔴 ТОП-10 товаров с избыточным запасом</h4>
+                    <div class="top-table-wrapper">
+                        <table class="top-table" id="topOverstockTable">
+                            <thead>
+                                <tr><th>#</th><th>Магазин</th><th>Артикул</th><th>Наименование</th><th>Запас (дн)</th><th>MIN</th><th>Проблема</th><th>Действие</th></tr>
+                            </thead>
+                            <tbody id="topOverstockBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- ТОП-10 Дефицит -->
+                <div class="analytics-section">
+                    <h4>🟡 ТОП-10 товаров с риском дефицита</h4>
+                    <div class="top-table-wrapper">
+                        <table class="top-table" id="topDeficitTable">
+                            <thead>
+                                <tr><th>#</th><th>Магазин</th><th>Артикул</th><th>Наименование</th><th>Запас (дн)</th><th>УТО</th><th>BEST</th><th>Причина</th><th>Действие</th></tr>
+                            </thead>
+                            <tbody id="topDeficitBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Ошибки в настройках -->
+                <div class="analytics-section">
+                    <h4>
+                        🟣 Ошибки в настройках MIN
+                        <div class="section-actions">
+                            <button class="btn-export-top" onclick="exportAlertArticles('errors')">📤 ВЫГРУЗИТЬ</button>
+                        </div>
+                    </h4>
+                    <div class="top-table-wrapper">
+                        <table class="top-table" id="topErrorsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Магазин</th>
+                                    <th>Артикул</th>
+                                    <th>Наименование</th>
+                                    <th>MIN 441</th>
+                                    <th>MIN 401</th>
+                                    <th>Вместимость</th>
+                                    <th>Запас (шт)</th>
+                                    <th>Ошибка</th>
+                                    <th>Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topErrorsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <footer>STOCKWISE — умный анализ резервов и товарных запасов. Автозагрузка работает в Chrome/Edge/Opera.</footer>
@@ -1420,7 +1630,6 @@ function openProductInMagPortal(article) {
         return;
     }
 
-    // Очищаем от лишних символов, оставляем только цифры
     const cleanArticle = String(article).replace(/[^\d]/g, '');
     if (!cleanArticle || cleanArticle.length < 4) {
         showToast(`❌ Некорректный артикул: ${article}`, 'warning');
@@ -1476,11 +1685,11 @@ function toggleTheme() {
     isDarkTheme = !isDarkTheme;
     document.documentElement.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light');
     document.getElementById('themeToggleBtn').textContent = isDarkTheme ? '☀️ Светлая' : '🌙 Тёмная';
-    localStorage.setItem('lemana_theme', isDarkTheme ? 'dark' : 'light');
+    localStorage.setItem('stockwise_theme', isDarkTheme ? 'dark' : 'light');
     showToast(isDarkTheme ? '🌙 Включена тёмная тема' : '☀️ Включена светлая тема', 'info');
 }
 
-if (localStorage.getItem('lemana_theme') === 'dark') {
+if (localStorage.getItem('stockwise_theme') === 'dark') {
     isDarkTheme = true;
     document.documentElement.setAttribute('data-theme', 'dark');
     document.getElementById('themeToggleBtn').textContent = '☀️ Светлая';
@@ -1568,6 +1777,39 @@ function saveState() {
     } catch (e) {}
 }
 
+// ==================== Сохранение/восстановление фильтров ====================
+let savedFilters = null;
+
+function saveCurrentFilters() {
+    savedFilters = {
+        department: document.getElementById('departmentFilter').value,
+        subdepartment: document.getElementById('subdepartmentFilter').value,
+        top: document.getElementById('topFilter').value,
+        stockMin: document.getElementById('stockMinInput').value,
+        stockMax: document.getElementById('stockMaxInput').value,
+        transitMin: document.getElementById('transitMinInput').value,
+        transitMax: document.getElementById('transitMaxInput').value
+    };
+}
+
+function restoreFilters() {
+    if (!savedFilters) return;
+    
+    document.getElementById('departmentFilter').value = savedFilters.department || 'all';
+    document.getElementById('subdepartmentFilter').value = savedFilters.subdepartment || 'all';
+    document.getElementById('topFilter').value = savedFilters.top || 'all';
+    document.getElementById('stockMinInput').value = savedFilters.stockMin || '0';
+    document.getElementById('stockMaxInput').value = savedFilters.stockMax || '999';
+    document.getElementById('transitMinInput').value = savedFilters.transitMin || '0';
+    document.getElementById('transitMaxInput').value = savedFilters.transitMax || '999';
+    updateRangeLabels();
+    
+    document.getElementById('searchFilterStatus').classList.remove('show');
+    savedFilters = null;
+    scheduleFilter();
+    showToast('✅ Фильтры восстановлены', 'info', 1500);
+}
+
 // ==================== Кеш данных ====================
 let cachedData = {
     fullData: [],
@@ -1603,6 +1845,14 @@ let visibleColumns = new Set(FULL_COLUMNS);
 const UTO_COLUMNS = ["УТО, руб.", "УТО, шт.", "Кол-во случаев перебоя за 30 дн", "Кол-во дней в перебое"];
 const BEST_COLUMNS = ["BEST гамма", "BEST NEXT"];
 const MIN_COLUMNS = ["Дни выхода заказа поставщика"];
+
+// ===== Список столбцов, где 0 не нужен (визуальный шум) =====
+const ZERO_AS_EMPTY_COLUMNS = [
+    "max дн.", "Авто min", "min ЦО Проект", "min ЦО ПАК-Подиум", 
+    "min ЦО коорд", "min 401 NEW", "min 441 ПМ", "min 500 Проект", 
+    "min 902 B2B", "max шт.", "Брак", "ЭКСПО", "През. минимум", 
+    "ТЖ/ПАК", "Подиум магазина", "Улич. Торг"
+];
 
 if (appState.visibleColumns && appState.visibleColumns.length) {
     visibleColumns = new Set(appState.visibleColumns);
@@ -1918,7 +2168,7 @@ function getFieldValue(item, possibleNames) {
     return "";
 }
 
-// ==================== calculateRow ====================
+// ==================== calculateRow (С ИСПРАВЛЕННОЙ ЛОГИКОЙ 0 И 999) ====================
 function calculateRow(gammaItem) {
     const artikul = String(gammaItem["Артикул"] || "").trim();
     const store = String(gammaItem["№ магазина"] || "").trim();
@@ -1941,24 +2191,24 @@ function calculateRow(gammaItem) {
         topValue = "";
     }
     
-    const minDn = getMaxReserveByKeyword(store, artikul);
+    const minDn = getMaxReserveByKeyword(store, artikul) || 0;
     const maxItem = maxMap.get(mapKey);
-    const maxDn = maxItem ? (maxItem["Дни, значение"] || "") : "";
-    const maxSht = maxItem ? (maxItem["Штуки, значение"] || "") : "";
-    const avtoMin = avtoMinMap.get(mapKey) || "";
-    const minTsProekt = getSumByReserve(store, artikul, "Мин ЦО Амбиция проекта шт");
-    const minTsPakPodium = getSumByReserve(store, artikul, "Мин ЦО Пак-Подиум шт");
-    const minTsKoord = getSumByReserve(store, artikul, "Мин ЦО коорд. шт");
-    const minNoviyTovar = getSumByReserve(store, artikul, "Мин Новый товар шт");
-    const minPm = getSumByReserve(store, artikul, "Мин Магазин ПМ шт");
-    const minAmbitsiya = getSumByReserve(store, artikul, "Мин Магазин Амбиция проекта шт");
-    const minV2B = getSumByReserve(store, artikul, "Мин Магазин В2В шт");
-    const brak = getSumByReserve(store, artikul, "Брак");
-    const ekspo = ekspoMap.get(mapKey) || getSumByReserve(store, artikul, "ЭКСПО");
-    const prezMinimum = getSumByReserve(store, artikul, "През. минимум");
-    const tjPak = getSumByReserve(store, artikul, "ТЖ/ПАК");
-    const podiumMagazina = getSumByReserve(store, artikul, "Подиум магазина");
-    const ulichnTorg = getSumByReserve(store, artikul, "Уличн. торговля");
+    const maxDn = maxItem ? (maxItem["Дни, значение"] || 0) : 0;
+    const maxSht = maxItem ? (maxItem["Штуки, значение"] || 0) : 0;
+    const avtoMin = avtoMinMap.get(mapKey) || 0;
+    const minTsProekt = getSumByReserve(store, artikul, "Мин ЦО Амбиция проекта шт") || 0;
+    const minTsPakPodium = getSumByReserve(store, artikul, "Мин ЦО Пак-Подиум шт") || 0;
+    const minTsKoord = getSumByReserve(store, artikul, "Мин ЦО коорд. шт") || 0;
+    const minNoviyTovar = getSumByReserve(store, artikul, "Мин Новый товар шт") || 0;
+    const minPm = getSumByReserve(store, artikul, "Мин Магазин ПМ шт") || 0;
+    const minAmbitsiya = getSumByReserve(store, artikul, "Мин Магазин Амбиция проекта шт") || 0;
+    const minV2B = getSumByReserve(store, artikul, "Мин Магазин В2В шт") || 0;
+    const brak = getSumByReserve(store, artikul, "Брак") || 0;
+    const ekspo = ekspoMap.get(mapKey) || getSumByReserve(store, artikul, "ЭКСПО") || 0;
+    const prezMinimum = getSumByReserve(store, artikul, "През. минимум") || 0;
+    const tjPak = getSumByReserve(store, artikul, "ТЖ/ПАК") || 0;
+    const podiumMagazina = getSumByReserve(store, artikul, "Подиум магазина") || 0;
+    const ulichnTorg = getSumByReserve(store, artikul, "Уличн. торговля") || 0;
     
     const minTypes = {
         "Авто min": toNumber(avtoMin),
@@ -1994,25 +2244,44 @@ function calculateRow(gammaItem) {
     const fullName = typeFullName[maxMinType] || maxMinType;
     const naibolshiyRezervMin = maxMinValue > 0 ? `${fullName} (${maxMinValue})` : "";
     
-    const teorStokGamma = toNumber(gammaItem["Сумма Кол-во в запасе"]);
-    const otgruzheno = toNumber(gammaItem["Отгруженное кол-во"]);
+    // ===== ОСНОВНЫЕ РАСЧЁТЫ С 0 =====
+    const teorStokGamma = toNumber(gammaItem["Сумма Кол-во в запасе"]) || 0;
+    const otgruzheno = toNumber(gammaItem["Отгруженное кол-во"]) || 0;
     const otgruzhenoSred = otgruzheno > 0 ? round(otgruzheno / 6, 1) : 0;
+    
     let zapasSht = teorStokGamma - ekspo - brak;
-    let zapasDn = 999;
-    if (otgruzhenoSred > 0 && zapasSht > 0) { 
-        zapasDn = round(zapasSht / otgruzhenoSred * 7, 1); 
-        if (zapasDn < 0) zapasDn = 999; 
+    if (zapasSht < 0) zapasSht = 0;
+    
+    // ===== ЗАПАС В ДНЯХ =====
+    let zapasDn = 0;
+    if (otgruzhenoSred > 0 && zapasSht > 0) {
+        zapasDn = round(zapasSht / otgruzhenoSred * 7, 1);
+        if (zapasDn < 0) zapasDn = 0;
+    } else if (zapasSht > 0 && otgruzhenoSred === 0) {
+        zapasDn = 999;  // ← товар есть, но продаж нет
+    } else {
+        zapasDn = 0;    // ← товара нет
     }
-    const vPutishSht = toNumber(gammaItem["Сумма В пути, шт."]);
+    
+    // ===== В ПУТИ =====
+    const vPutishSht = toNumber(gammaItem["Сумма В пути, шт."]) || 0;
     let vPutishDn = 0;
-    if (vPutishSht > 0 && otgruzhenoSred > 0) vPutishDn = round(vPutishSht / otgruzhenoSred * 7, 1);
-    const vmesimost = toNumber(gammaItem["Вместимость полки"]);
+    if (vPutishSht > 0 && otgruzhenoSred > 0) {
+        vPutishDn = round(vPutishSht / otgruzhenoSred * 7, 1);
+        if (vPutishDn < 0) vPutishDn = 0;
+    } else if (vPutishSht > 0 && otgruzhenoSred === 0) {
+        vPutishDn = 999;  // ← товар в пути, но продаж нет
+    } else {
+        vPutishDn = 0;    // ← нет в пути
+    }
+    
+    const vmesimost = toNumber(gammaItem["Вместимость полки"]) || 0;
     const zapasBolsheVmes = (zapasSht >= vmesimost && vmesimost > 0) ? "да" : "нет";
     const utoItem = utoMap.get(mapKey);
-    const utoRub = utoItem ? toNumber(utoItem["Уп.GMV руб"]) : 0;
-    const utoSht = utoItem ? toNumber(utoItem["Уп.GMV шт"]) : 0;
-    const pereboiCount = utoItem ? toNumber(utoItem["Кол-во случаев перебоя за 30 дней"]) : 0;
-    const pereboiDays = utoItem ? toNumber(utoItem["Кол-во дней в перебое за 30 дней"]) : 0;
+    const utoRub = utoItem ? toNumber(utoItem["Уп.GMV руб"]) || 0 : 0;
+    const utoSht = utoItem ? toNumber(utoItem["Уп.GMV шт"]) || 0 : 0;
+    const pereboiCount = utoItem ? toNumber(utoItem["Кол-во случаев перебоя за 30 дней"]) || 0 : 0;
+    const pereboiDays = utoItem ? toNumber(utoItem["Кол-во дней в перебое за 30 дней"]) || 0 : 0;
     const supplierCode = String(gammaItem["№ Поставщика"] || gammaItem["Номер поставщика"] || "").trim();
     const dniZakaza = postavkiMap.get(supplierCode) || "";
     const korrekcii = korrekciiMap.get(mapKey) || 0;
@@ -2026,10 +2295,15 @@ function calculateRow(gammaItem) {
         dateAVS = formatDateDDMMYYYY(new Date(dateAVS));
     }
     
-    function cleanValue(val) {
+    // ===== ФУНКЦИЯ ОЧИСТКИ — 0 только для нужных столбцов =====
+    function cleanValue(val, colName) {
         if (val === undefined || val === null || val === "") return "";
         const num = toNumber(val, 0);
-        return num > 0 ? num : "";
+        // Если столбец в списке ZERO_AS_EMPTY_COLUMNS и значение 0 → возвращаем пустую строку
+        if (ZERO_AS_EMPTY_COLUMNS.includes(colName) && num === 0) {
+            return "";
+        }
+        return num;
     }
     
     return {
@@ -2043,42 +2317,42 @@ function calculateRow(gammaItem) {
         "LOC": gammaItem["Признак LOC"] || "",
         "Статус": gammaItem["Статус"] || "",
         "CPQ": gammaItem["CPQ"] || "",
-        "min дн": cleanValue(minDn),
-        "max дн.": maxDn,
-        "Авто min": cleanValue(avtoMin),
-        "min ЦО Проект": cleanValue(minTsProekt),
-        "min ЦО ПАК-Подиум": cleanValue(minTsPakPodium),
-        "min ЦО коорд": cleanValue(minTsKoord),
-        "min 401 NEW": cleanValue(minNoviyTovar),
-        "min 441 ПМ": cleanValue(minPm),
-        "min 500 Проект": cleanValue(minAmbitsiya),
-        "min 902 B2B": cleanValue(minV2B),
-        "max шт.": maxSht,
-        "Брак": cleanValue(brak),
-        "ЭКСПО": cleanValue(ekspo),
-        "През. минимум": cleanValue(prezMinimum),
-        "ТЖ/ПАК": cleanValue(tjPak),
-        "Подиум магазина": cleanValue(podiumMagazina),
-        "Улич. Торг": cleanValue(ulichnTorg),
+        "min дн": cleanValue(minDn, "min дн"),
+        "max дн.": cleanValue(maxDn, "max дн."),
+        "Авто min": cleanValue(avtoMin, "Авто min"),
+        "min ЦО Проект": cleanValue(minTsProekt, "min ЦО Проект"),
+        "min ЦО ПАК-Подиум": cleanValue(minTsPakPodium, "min ЦО ПАК-Подиум"),
+        "min ЦО коорд": cleanValue(minTsKoord, "min ЦО коорд"),
+        "min 401 NEW": cleanValue(minNoviyTovar, "min 401 NEW"),
+        "min 441 ПМ": cleanValue(minPm, "min 441 ПМ"),
+        "min 500 Проект": cleanValue(minAmbitsiya, "min 500 Проект"),
+        "min 902 B2B": cleanValue(minV2B, "min 902 B2B"),
+        "max шт.": cleanValue(maxSht, "max шт."),
+        "Брак": cleanValue(brak, "Брак"),
+        "ЭКСПО": cleanValue(ekspo, "ЭКСПО"),
+        "През. минимум": cleanValue(prezMinimum, "През. минимум"),
+        "ТЖ/ПАК": cleanValue(tjPak, "ТЖ/ПАК"),
+        "Подиум магазина": cleanValue(podiumMagazina, "Подиум магазина"),
+        "Улич. Торг": cleanValue(ulichnTorg, "Улич. Торг"),
         "Наибольший резерв MIN": naibolshiyRezervMin,
         "Вид минимума": "",
         "Кол-во проектов": "",
-        "Вместимость": cleanValue(vmesimost),
-        "Отгружено в сред. За 7 дн": cleanValue(otgruzhenoSred),
-        "Теор сток ГАММА": cleanValue(teorStokGamma),
-        "Запас, шт.": cleanValue(zapasSht),
-        "Запас, дн.": zapasDn === 999 ? "" : zapasDn,
-        "В пути, шт.": cleanValue(vPutishSht),
-        "В пути, дн.": vPutishDn > 0 ? vPutishDn : "",
+        "Вместимость": cleanValue(vmesimost, "Вместимость"),
+        "Отгружено в сред. За 7 дн": cleanValue(otgruzhenoSred, "Отгружено в сред. За 7 дн"),
+        "Теор сток ГАММА": cleanValue(teorStokGamma, "Теор сток ГАММА"),
+        "Запас, шт.": cleanValue(zapasSht, "Запас, шт."),
+        "Запас, дн.": zapasDn === 999 ? 999 : cleanValue(zapasDn, "Запас, дн."),
+        "В пути, шт.": cleanValue(vPutishSht, "В пути, шт."),
+        "В пути, дн.": vPutishDn === 999 ? 999 : cleanValue(vPutishDn, "В пути, дн."),
         "Размер упаковки": gammaItem["Размер упаковки"] || "",
-        "УТО, руб.": cleanValue(utoRub),
-        "УТО, шт.": cleanValue(utoSht),
-        "Кол-во случаев перебоя за 30 дн": cleanValue(pereboiCount),
-        "Кол-во дней в перебое": cleanValue(pereboiDays),
+        "УТО, руб.": cleanValue(utoRub, "УТО, руб."),
+        "УТО, шт.": cleanValue(utoSht, "УТО, шт."),
+        "Кол-во случаев перебоя за 30 дн": cleanValue(pereboiCount, "Кол-во случаев перебоя за 30 дн"),
+        "Кол-во дней в перебое": cleanValue(pereboiDays, "Кол-во дней в перебое"),
         "20/80": gammaItem["Сумма 20/80"] || "",
         "ТС": gammaItem["Токсичный сток"] || "",
         "МС": gammaItem["Сумма Мертвый сток"] || "",
-        "Корекции": cleanValue(korrekcii),
+        "Корекции": cleanValue(korrekcii, "Корекции"),
         "Недопоставки": nedopostavki > 0 ? nedopostavki : "",
         "Подотдел": gammaItem["Подотдел"] || "",
         "ТИП": gammaItem["Тип"] || "",
@@ -2279,6 +2553,83 @@ function scheduleFilter() {
     }, 300);
 }
 
+// ==================== Фильтрация по артикулам (С АВТОСБРОСОМ) ====================
+function applyArticleFilter() {
+    const inputValue = document.getElementById('articleSearchInput').value.trim();
+    const nameValue = document.getElementById('nameSearchInput').value.trim();
+    
+    if (!inputValue && !nameValue) {
+        if (articleFilterList && articleFilterList.size > 0) {
+            scheduleFilter();
+            return;
+        }
+        articleFilterList = null;
+        document.getElementById('articleListPreview').innerHTML = '';
+        document.getElementById('searchFilterStatus').classList.remove('show');
+        if (savedFilters) {
+            restoreFilters();
+        }
+        scheduleFilter();
+        return;
+    }
+    
+    if (inputValue) {
+        const storeFilterValue = document.getElementById('storeFilter').value;
+        if (storeFilterValue === 'all') {
+            showToast('Сначала выберите магазин!', 'warning');
+            return;
+        }
+        
+        let articles = inputValue.split(/[,\s\n]+/).filter(a => a.trim());
+        articles = articles.map(a => a.replace(/[^\d]/g, '')).filter(a => a && a.length >= 4);
+        if (articles.length === 0) {
+            showToast('Введите корректные артикулы (только цифры)', 'warning');
+            return;
+        }
+        
+        // ===== СОХРАНЯЕМ ТЕКУЩИЕ ФИЛЬТРЫ =====
+        saveCurrentFilters();
+        
+        articleFilterList = new Set(articles);
+        document.getElementById('articleListPreview').innerHTML = `🔍 Поиск: ${articles.slice(0, 5).join(', ')}${articles.length > 5 ? '...' : ''} (${articles.length} арт.)`;
+        
+        // ===== СБРАСЫВАЕМ ФИЛЬТРЫ (кроме магазина) =====
+        const currentStore = document.getElementById('storeFilter').value;
+        
+        document.getElementById('departmentFilter').value = 'all';
+        document.getElementById('subdepartmentFilter').value = 'all';
+        document.getElementById('topFilter').value = 'all';
+        document.getElementById('stockMinInput').value = '0';
+        document.getElementById('stockMaxInput').value = '999';
+        document.getElementById('transitMinInput').value = '0';
+        document.getElementById('transitMaxInput').value = '999';
+        document.getElementById('nameSearchInput').value = '';
+        updateRangeLabels();
+        
+        // ===== ПОКАЗЫВАЕМ БАННЕР =====
+        const statusDiv = document.getElementById('searchFilterStatus');
+        statusDiv.classList.add('show');
+        document.getElementById('searchFilterStore').textContent = `Магазин ${currentStore} сохранён`;
+        
+        showToast(`🔍 Фильтры сброшены для поиска артикулов`, 'info', 3000);
+    }
+    
+    scheduleFilter();
+}
+
+function clearArticleFilter() {
+    articleFilterList = null;
+    document.getElementById('articleSearchInput').value = '';
+    document.getElementById('nameSearchInput').value = '';
+    document.getElementById('articleListPreview').innerHTML = '';
+    document.getElementById('searchFilterStatus').classList.remove('show');
+    if (savedFilters) {
+        restoreFilters();
+    }
+    scheduleFilter();
+    showToast('🗑️ Все фильтры очищены', 'info');
+}
+
 // ==================== Оповещения о критических товарах ====================
 function checkCriticalItems(data) {
     const criticalItems = data.filter(row => {
@@ -2396,7 +2747,6 @@ function updateAnalytics(data) {
     renderStoreSummary(storeStats);
     renderStockDistribution(storeStats);
     
-    // ===== Добавляем обработчики кликов на карточки =====
     document.querySelectorAll('.stat-card').forEach(card => {
         card.removeEventListener('click', card._clickHandler);
         
@@ -2437,7 +2787,7 @@ function renderTopCritical(items) {
         tr.innerHTML = `
             <td class="rank">${idx + 1}</td>
             <td>${row["№ магазина"] || ''}</td>
-            <td><strong>${row["Артикул"] || ''}</strong></td>
+            <td><strong onclick="openProductInMagPortal('${row["Артикул"]}')" style="cursor:pointer;color:#FF8C00;">${row["Артикул"] || ''}</strong></td>
             <td>${(row["Наименование"] || '').substring(0, 25)}${(row["Наименование"] || '').length > 25 ? '...' : ''}</td>
             <td><span class="badge-critical">${days} дн</span></td>
             <td>${transitDays > 0 ? `<span class="badge-transit">${transitDays} дн</span>` : '<span class="badge-no-transit">нет</span>'}</td>
@@ -2464,7 +2814,7 @@ function renderTopUto(items) {
         tr.innerHTML = `
             <td class="rank">${idx + 1}</td>
             <td>${row["№ магазина"] || ''}</td>
-            <td><strong>${row["Артикул"] || ''}</strong></td>
+            <td><strong onclick="openProductInMagPortal('${row["Артикул"]}')" style="cursor:pointer;color:#FF8C00;">${row["Артикул"] || ''}</strong></td>
             <td>${(row["Наименование"] || '').substring(0, 25)}${(row["Наименование"] || '').length > 25 ? '...' : ''}</td>
             <td><span class="badge-uto">${utoRub} руб</span></td>
             <td>${days < 999 ? days + ' дн' : '-'}</td>
@@ -3542,52 +3892,7 @@ function generateColumnToggles() {
     });
 }
 
-// ==================== Фильтрация по артикулам ====================
-function applyArticleFilter() {
-    const inputValue = document.getElementById('articleSearchInput').value.trim();
-    const nameValue = document.getElementById('nameSearchInput').value.trim();
-    
-    if (!inputValue && !nameValue) {
-        if (articleFilterList && articleFilterList.size > 0) {
-            scheduleFilter();
-            return;
-        }
-        articleFilterList = null;
-        document.getElementById('articleListPreview').innerHTML = '';
-        scheduleFilter();
-        return;
-    }
-    
-    if (inputValue) {
-        const storeFilterValue = document.getElementById('storeFilter').value;
-        if (storeFilterValue === 'all') {
-            showToast('Сначала выберите магазин!', 'warning');
-            return;
-        }
-        
-        let articles = inputValue.split(/[,\s\n]+/).filter(a => a.trim());
-        articles = articles.map(a => a.replace(/[^\d]/g, '')).filter(a => a && a.length >= 4);
-        if (articles.length === 0) {
-            showToast('Введите корректные артикулы (только цифры)', 'warning');
-            return;
-        }
-        articleFilterList = new Set(articles);
-        document.getElementById('articleListPreview').innerHTML = `🔍 Поиск: ${articles.slice(0, 5).join(', ')}${articles.length > 5 ? '...' : ''} (${articles.length} арт.)`;
-    }
-    
-    scheduleFilter();
-    showToast(`🔍 Применен фильтр`, 'info');
-}
-
-function clearArticleFilter() {
-    articleFilterList = null;
-    document.getElementById('articleSearchInput').value = '';
-    document.getElementById('nameSearchInput').value = '';
-    document.getElementById('articleListPreview').innerHTML = '';
-    scheduleFilter();
-    showToast('🗑️ Все фильтры очищены', 'info');
-}
-
+// ==================== Загрузка списка артикулов из файла ====================
 function loadArticleListFromFile() {
     const storeFilterValue = document.getElementById('storeFilter').value;
     if (storeFilterValue === 'all') {
@@ -3883,6 +4188,829 @@ function switchTab(tabId) {
     if (tabId === 'analytics' && cachedData.fullData.length) {
         updateAnalytics(filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData);
     }
+    if (tabId === 'alerts') {
+        if (!document.getElementById('alertSummary').style.display || document.getElementById('alertSummary').style.display === 'none') {
+            scanAlerts();
+        }
+    }
+}
+
+// ==================== Аномалии и рекомендации ====================
+
+let alertData = {
+    overstock: [],
+    deficit: [],
+    errors: [],
+    critical: []
+};
+
+let errorFilters = {
+    min441: true,
+    min401: true,
+    zapas: true
+};
+
+function scanAlerts() {
+    const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+    if (!data.length) {
+        showToast('Нет данных для сканирования. Сначала выполните расчёт.', 'warning');
+        return;
+    }
+    
+    const loadingDiv = document.getElementById('loadingIndicator');
+    loadingDiv.style.display = 'block';
+    document.getElementById('loadingText').innerText = 'Сканирование аномалий...';
+    
+    setTimeout(() => {
+        try {
+            alertData = {
+                overstock: [],
+                deficit: [],
+                errors: [],
+                critical: []
+            };
+            
+            for (const row of data) {
+                const days = toNumber(row["Запас, дн."], 999);
+                const utoRub = toNumber(row["УТО, руб."], 0);
+                const utoSht = toNumber(row["УТО, шт."], 0);
+                const hasUto = utoRub > 0 || utoSht > 0;
+                const hasBest = (row["BEST гамма"] && row["BEST гамма"] !== "") || 
+                                (row["BEST NEXT"] && row["BEST NEXT"] !== "");
+                const mc = toNumber(row["МС"], 0);
+                const ts = toNumber(row["ТС"], 0);
+                const min441 = toNumber(row["min 441 ПМ"], 0);
+                const min500 = toNumber(row["min 500 Проект"], 0);
+                const min401 = toNumber(row["min 401 NEW"], 0);
+                const vmesimost = toNumber(row["Вместимость"], 0);
+                const zapasSht = toNumber(row["Запас, шт."], 0);
+                const otgruzhenoSred = toNumber(row["Отгружено в сред. За 7 дн"], 0);
+                const gamma = String(row["Гамма"] || "").trim();
+                const isNew = gamma === "401" || gamma === "Новинка" || gamma === "NEW";
+                const transitDays = toNumber(row["В пути, дн."], 0);
+                
+                let overstockReasons = [];
+                let deficitReasons = [];
+                let errorReasons = [];
+                
+                // ===== ГРУППА 1: ПЕРЕЗАПАС =====
+                if (days > 90 && days < 999) {
+                    if (mc === 1) overstockReasons.push('Мёртвый сток (МС=1)');
+                    if (ts === 1) overstockReasons.push('Токсичный сток (ТС=1)');
+                    if (!hasBest && days > 90) overstockReasons.push('Не бест, но запас >90 дн');
+                    if (otgruzhenoSred === 0) overstockReasons.push('Продажи = 0, запас >60 дн');
+                    if (zapasSht > vmesimost && vmesimost > 0) overstockReasons.push('Запас > вместимости');
+                }
+                
+                // ===== ГРУППА 2: ДЕФИЦИТ =====
+                if (days < 7 && days > 0) {
+                    if (hasUto) {
+                        deficitReasons.push('🟥 КРИТИЧЕСКИ: УТО + запас <7 дн');
+                        alertData.critical.push({ ...row, reason: 'УТО + запас <7 дн' });
+                    }
+                    if (hasBest) deficitReasons.push('Бест заканчивается (<7 дн)');
+                    const hasMin = min441 > 0 || min500 > 0 || min401 > 0;
+                    if (!hasMin) deficitReasons.push('Нет ни одного MIN');
+                }
+                if (days < 14 && days > 0 && hasBest) {
+                    deficitReasons.push('Бест заканчивается (<14 дн)');
+                }
+                if (transitDays === 0 && days < 14 && days > 0 && hasBest) {
+                    deficitReasons.push('Бест заканчивается, ничего не в пути');
+                }
+                
+                // ===== ГРУППА 3: ОШИБКИ В НАСТРОЙКАХ =====
+                // 1. MIN 441 > Вместимость
+                if (min441 > vmesimost && vmesimost > 0 && min441 > 0) {
+                    errorReasons.push(`MIN 441 (${min441}) > вместимости (${vmesimost})`);
+                }
+                // 2. Новинка без MIN 401
+                if (isNew && min401 === 0) {
+                    errorReasons.push('Новинка без MIN 401');
+                }
+                // 3. Запас > Вместимость
+                if (zapasSht > vmesimost && vmesimost > 0) {
+                    errorReasons.push(`Запас (${zapasSht}) > вместимости (${vmesimost})`);
+                }
+                
+                // ===== Сохраняем результаты =====
+                if (overstockReasons.length > 0) {
+                    alertData.overstock.push({ 
+                        ...row, 
+                        reasons: overstockReasons,
+                        mainReason: overstockReasons[0]
+                    });
+                }
+                if (deficitReasons.length > 0) {
+                    alertData.deficit.push({ 
+                        ...row, 
+                        reasons: deficitReasons,
+                        mainReason: deficitReasons[0]
+                    });
+                }
+                if (errorReasons.length > 0) {
+                    alertData.errors.push({ 
+                        ...row, 
+                        reasons: errorReasons,
+                        mainReason: errorReasons[0],
+                        errorType: errorReasons[0].includes('MIN 441') ? 'min441' :
+                                    errorReasons[0].includes('Новинка без MIN 401') ? 'min401' : 'zapas'
+                    });
+                }
+            }
+            
+            renderAlertStats();
+            renderTopOverstock();
+            renderTopDeficit();
+            renderTopErrors();
+            renderErrorStats();
+            
+            document.getElementById('alertSummary').style.display = 'block';
+            document.getElementById('totalAlerts').textContent = 
+                alertData.overstock.length + alertData.deficit.length + alertData.errors.length;
+            
+            loadingDiv.style.display = 'none';
+            showToast(`✅ Сканирование завершено! Найдено ${document.getElementById('totalAlerts').textContent} аномалий`, 'success');
+            
+        } catch (e) {
+            console.error(e);
+            loadingDiv.style.display = 'none';
+            showToast(`Ошибка сканирования: ${e.message}`, 'error');
+        }
+    }, 100);
+}
+
+function renderAlertStats() {
+    document.getElementById('alertOverstockValue').textContent = alertData.overstock.length;
+    document.getElementById('alertDeficitValue').textContent = alertData.deficit.length;
+    document.getElementById('alertErrorsValue').textContent = alertData.errors.length;
+    document.getElementById('alertCriticalValue').textContent = alertData.critical.length;
+}
+
+function renderTopOverstock() {
+    const tbody = document.getElementById('topOverstockBody');
+    tbody.innerHTML = '';
+    const items = alertData.overstock
+        .sort((a, b) => toNumber(b["Запас, дн."]) - toNumber(a["Запас, дн."]))
+        .slice(0, 10);
+    
+    items.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const days = toNumber(row["Запас, дн."]);
+        const minType = row["Наибольший резерв MIN"] || '-';
+        tr.innerHTML = `
+            <td class="rank">${idx + 1}</td>
+            <td>${row["№ магазина"] || ''}</td>
+            <td><strong onclick="openProductInMagPortal('${row["Артикул"]}')" style="cursor:pointer;color:#FF8C00;">${row["Артикул"] || ''}</strong></td>
+            <td>${(row["Наименование"] || '').substring(0, 25)}${(row["Наименование"] || '').length > 25 ? '...' : ''}</td>
+            <td><span class="badge-critical">${days} дн</span></td>
+            <td>${minType}</td>
+            <td><span style="color:#e53935;font-size:0.5rem;">${row.mainReason || ''}</span></td>
+            <td><button class="export-btn" onclick="exportAlertArticles('overstock')">📤</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:10px;">✅ Нет аномалий по перезапасу</td></tr>';
+    }
+}
+
+function renderTopDeficit() {
+    const tbody = document.getElementById('topDeficitBody');
+    tbody.innerHTML = '';
+    const items = alertData.deficit
+        .sort((a, b) => toNumber(a["Запас, дн."]) - toNumber(b["Запас, дн."]))
+        .slice(0, 10);
+    
+    items.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const days = toNumber(row["Запас, дн."]);
+        const utoRub = toNumber(row["УТО, руб."], 0);
+        const hasBest = (row["BEST гамма"] && row["BEST гамма"] !== "") || 
+                        (row["BEST NEXT"] && row["BEST NEXT"] !== "");
+        tr.innerHTML = `
+            <td class="rank">${idx + 1}</td>
+            <td>${row["№ магазина"] || ''}</td>
+            <td><strong onclick="openProductInMagPortal('${row["Артикул"]}')" style="cursor:pointer;color:#FF8C00;">${row["Артикул"] || ''}</strong></td>
+            <td>${(row["Наименование"] || '').substring(0, 20)}${(row["Наименование"] || '').length > 20 ? '...' : ''}</td>
+            <td><span class="badge-warning">${days} дн</span></td>
+            <td>${utoRub > 0 ? '💰 ' + utoRub : '-'}</td>
+            <td>${hasBest ? '⭐' : ''}</td>
+            <td><span style="color:#fb8c00;font-size:0.5rem;">${row.mainReason || ''}</span></td>
+            <td><button class="export-btn" onclick="exportAlertArticles('deficit')">📤</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:10px;">✅ Нет аномалий по дефициту</td></tr>';
+    }
+}
+
+function renderTopErrors() {
+    const tbody = document.getElementById('topErrorsBody');
+    tbody.innerHTML = '';
+    
+    let items = alertData.errors;
+    items = items.filter(row => {
+        if (row.errorType === 'min441' && !errorFilters.min441) return false;
+        if (row.errorType === 'min401' && !errorFilters.min401) return false;
+        if (row.errorType === 'zapas' && !errorFilters.zapas) return false;
+        return true;
+    });
+    
+    items = items.slice(0, 10);
+    
+    items.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const min441 = toNumber(row["min 441 ПМ"], 0);
+        const min401 = toNumber(row["min 401 NEW"], 0);
+        const vmesimost = toNumber(row["Вместимость"], 0);
+        const zapasSht = toNumber(row["Запас, шт."], 0);
+        
+        let errorDesc = '';
+        let solution = '';
+        
+        if (min441 > vmesimost && vmesimost > 0 && min441 > 0) {
+            errorDesc = `MIN 441 (${min441}) > вместимости (${vmesimost})`;
+            solution = '📉 Уменьшить MIN 441';
+        } else if (row.errorType === 'min401') {
+            errorDesc = 'Новинка без MIN 401';
+            solution = '📈 Добавить MIN 401';
+        } else if (zapasSht > vmesimost && vmesimost > 0) {
+            errorDesc = `Запас (${zapasSht}) > вместимости (${vmesimost})`;
+            solution = '📉 Уменьшить запас / увеличить вместимость';
+        } else {
+            errorDesc = row.mainReason || 'Ошибка';
+            solution = '🔍 Проверить настройки';
+        }
+        
+        tr.innerHTML = `
+            <td class="rank">${idx + 1}</td>
+            <td>${row["№ магазина"] || ''}</td>
+            <td><strong onclick="openProductInMagPortal('${row["Артикул"]}')" style="cursor:pointer;color:#FF8C00;">${row["Артикул"] || ''}</strong></td>
+            <td>${(row["Наименование"] || '').substring(0, 20)}${(row["Наименование"] || '').length > 20 ? '...' : ''}</td>
+            <td>${min441 > 0 ? min441 : '-'}</td>
+            <td>${min401 > 0 ? min401 : '-'}</td>
+            <td>${vmesimost > 0 ? vmesimost : '-'}</td>
+            <td>${zapasSht > 0 ? zapasSht : '-'}</td>
+            <td>
+                <span style="color:#d32f2f;font-size:0.55rem;font-weight:600;">
+                    ⚠️ ${errorDesc}
+                </span>
+                <br>
+                <span style="color:#2c5f2d;font-size:0.45rem;">
+                    💡 ${solution}
+                </span>
+            </td>
+            <td>
+                <button class="export-btn" onclick="exportSingleAlert('${row["Артикул"]}', '${row["№ магазина"]}')">
+                    📤
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:10px;">✅ Ошибок не найдено</td></tr>';
+    }
+}
+
+function renderErrorStats() {
+    const stats = {};
+    
+    alertData.errors.forEach(row => {
+        const store = row["№ магазина"] || 'Неизвестно';
+        if (!stats[store]) {
+            stats[store] = { min441: 0, min401: 0, zapas: 0, total: 0 };
+        }
+        if (row.errorType === 'min441') stats[store].min441++;
+        else if (row.errorType === 'min401') stats[store].min401++;
+        else if (row.errorType === 'zapas') stats[store].zapas++;
+        stats[store].total++;
+    });
+    
+    const tbody = document.getElementById('errorStatsBody');
+    tbody.innerHTML = '';
+    
+    const sortedStores = Object.keys(stats).sort((a, b) => stats[b].total - stats[a].total);
+    let maxErrors = 0;
+    let maxStore = '';
+    
+    sortedStores.forEach(store => {
+        const s = stats[store];
+        if (s.total > maxErrors) {
+            maxErrors = s.total;
+            maxStore = store;
+        }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${store}</strong></td>
+            <td style="color:${s.min441 > 0 ? '#e53935' : '#43a047'}; font-weight:${s.min441 > 0 ? '700' : '400'};">
+                ${s.min441 > 0 ? '🔴 ' + s.min441 : '✅ 0'}
+            </td>
+            <td style="color:${s.min401 > 0 ? '#e53935' : '#43a047'}; font-weight:${s.min401 > 0 ? '700' : '400'};">
+                ${s.min401 > 0 ? '🔴 ' + s.min401 : '✅ 0'}
+            </td>
+            <td style="color:${s.zapas > 0 ? '#e53935' : '#43a047'}; font-weight:${s.zapas > 0 ? '700' : '400'};">
+                ${s.zapas > 0 ? '🔴 ' + s.zapas : '✅ 0'}
+            </td>
+            <td style="font-weight:700; color:${s.total > 3 ? '#e53935' : s.total > 0 ? '#fb8c00' : '#43a047'};">
+                ${s.total}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    const totalMin441 = Object.values(stats).reduce((sum, s) => sum + s.min441, 0);
+    const totalMin401 = Object.values(stats).reduce((sum, s) => sum + s.min401, 0);
+    const totalZapas = Object.values(stats).reduce((sum, s) => sum + s.zapas, 0);
+    const totalErrors = Object.values(stats).reduce((sum, s) => sum + s.total, 0);
+    
+    const footer = document.createElement('tr');
+    footer.style.fontWeight = '700';
+    footer.style.borderTop = '2px solid var(--border-color)';
+    footer.innerHTML = `
+        <td><strong>ИТОГО</strong></td>
+        <td>${totalMin441}</td>
+        <td>${totalMin401}</td>
+        <td>${totalZapas}</td>
+        <td style="color:#FF8C00;">${totalErrors}</td>
+    `;
+    tbody.appendChild(footer);
+    
+    const summary = document.getElementById('errorStatsSummary');
+    if (maxErrors > 0) {
+        summary.innerHTML = `🔴 Больше всего ошибок в магазине <strong>${maxStore}</strong> (${maxErrors} ошибок)`;
+    } else {
+        summary.innerHTML = '✅ Ошибок не найдено';
+    }
+}
+
+function exportAlertArticles(type) {
+    let items = [];
+    let fileName = '';
+    
+    if (type === 'overstock') {
+        items = alertData.overstock;
+        fileName = 'Аномалии_Перезапас';
+    } else if (type === 'deficit') {
+        items = alertData.deficit;
+        fileName = 'Аномалии_Дефицит';
+    } else if (type === 'errors') {
+        items = alertData.errors.filter(row => {
+            if (row.errorType === 'min441' && !errorFilters.min441) return false;
+            if (row.errorType === 'min401' && !errorFilters.min401) return false;
+            if (row.errorType === 'zapas' && !errorFilters.zapas) return false;
+            return true;
+        });
+        fileName = 'Аномалии_Ошибки_MIN';
+    } else if (type === 'all') {
+        items = [...alertData.overstock, ...alertData.deficit, ...alertData.errors];
+        fileName = 'Аномалии_Все';
+    }
+    
+    if (items.length === 0) {
+        showToast('Нет данных для экспорта', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [
+        ["#", "Магазин", "Артикул", "Наименование", "Запас, дн.", "В пути, дн.", "УТО, руб.", "MIN 441", "MIN 500", "Вместимость", "МС", "ТС", "Причина"]
+    ];
+    
+    items.forEach((row, idx) => {
+        wsData.push([
+            idx + 1,
+            row["№ магазина"] || '',
+            row["Артикул"] || '',
+            row["Наименование"] || '',
+            row["Запас, дн."] || '',
+            row["В пути, дн."] || '',
+            row["УТО, руб."] || '',
+            row["min 441 ПМ"] || '',
+            row["min 500 Проект"] || '',
+            row["Вместимость"] || '',
+            row["МС"] || '',
+            row["ТС"] || '',
+            row.mainReason || ''
+        ]);
+    });
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, fileName);
+    
+    ws['!cols'] = [
+        { wch: 5 }, { wch: 12 }, { wch: 15 }, { wch: 35 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 },
+        { wch: 12 }, { wch: 12 }, { wch: 6 }, { wch: 6 }, { wch: 50 }
+    ];
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const storeFilter = document.getElementById('storeFilter').value;
+    const storeSuffix = storeFilter !== 'all' ? `_магазин_${storeFilter}` : '';
+    link.download = `${fileName}${storeSuffix}_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружено ${items.length} аномалий`, 'success');
+}
+
+function exportSingleAlert(article, store) {
+    if (!article) {
+        showToast('❌ Артикул не указан', 'warning');
+        return;
+    }
+    
+    const data = filteredCalculatedResult.length ? filteredCalculatedResult : cachedData.fullData;
+    const row = data.find(r => String(r["Артикул"] || "") === String(article) && String(r["№ магазина"] || "") === String(store));
+    
+    if (!row) {
+        showToast('❌ Товар не найден', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [
+        ["Магазин", "Артикул", "Наименование", "Запас, дн.", "В пути, дн.", "УТО, руб.", "MIN 441", "MIN 500", "Вместимость", "Проблема"]
+    ];
+    
+    let problem = '';
+    const min441 = toNumber(row["min 441 ПМ"], 0);
+    const min401 = toNumber(row["min 401 NEW"], 0);
+    const vmesimost = toNumber(row["Вместимость"], 0);
+    const zapasSht = toNumber(row["Запас, шт."], 0);
+    const gamma = String(row["Гамма"] || "").trim();
+    const isNew = gamma === "401" || gamma === "Новинка" || gamma === "NEW";
+    
+    if (min441 > vmesimost && vmesimost > 0 && min441 > 0) {
+        problem = `MIN 441 (${min441}) > вместимости (${vmesimost})`;
+    } else if (isNew && min401 === 0) {
+        problem = 'Новинка без MIN 401';
+    } else if (zapasSht > vmesimost && vmesimost > 0) {
+        problem = `Запас (${zapasSht}) > вместимости (${vmesimost})`;
+    }
+    
+    wsData.push([
+        row["№ магазина"] || '',
+        row["Артикул"] || '',
+        row["Наименование"] || '',
+        row["Запас, дн."] || '',
+        row["В пути, дн."] || '',
+        row["УТО, руб."] || '',
+        row["min 441 ПМ"] || '',
+        row["min 500 Проект"] || '',
+        row["Вместимость"] || '',
+        problem
+    ]);
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, "Ошибка");
+    
+    ws['!cols'] = [
+        { wch: 12 }, { wch: 15 }, { wch: 35 },
+        { wch: 12 }, { wch: 12 }, { wch: 15 },
+        { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 50 }
+    ];
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    link.download = `ошибка_${row["Артикул"]}_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружена позиция ${article}`, 'success');
+}
+
+function exportAllAlerts() {
+    exportAlertArticles('all');
+}
+
+function applyErrorFilters() {
+    const checkboxes = document.querySelectorAll('.error-filter');
+    checkboxes.forEach(cb => {
+        errorFilters[cb.dataset.type] = cb.checked;
+    });
+    renderTopErrors();
+}
+
+function clearErrorFilters() {
+    document.querySelectorAll('.error-filter').forEach(cb => {
+        cb.checked = false;
+        errorFilters[cb.dataset.type] = false;
+    });
+    renderTopErrors();
+}
+
+// ===== Предложить исправления =====
+function suggestFixes() {
+    const errors = alertData.errors;
+    if (errors.length === 0) {
+        showToast('✅ Ошибок не найдено, исправления не требуются', 'success');
+        return;
+    }
+    
+    let suggestions = [];
+    
+    for (const row of errors) {
+        const min441 = toNumber(row["min 441 ПМ"], 0);
+        const min401 = toNumber(row["min 401 NEW"], 0);
+        const vmesimost = toNumber(row["Вместимость"], 0);
+        const zapasSht = toNumber(row["Запас, шт."], 0);
+        const gamma = String(row["Гамма"] || "").trim();
+        const isNew = gamma === "401" || gamma === "Новинка" || gamma === "NEW";
+        const store = row["№ магазина"] || '';
+        const article = row["Артикул"] || '';
+        
+        let suggestion = {
+            store,
+            article,
+            name: row["Наименование"] || '',
+            field: '',
+            current: '',
+            recommended: '',
+            reason: ''
+        };
+        
+        // 1. MIN 441 > Вместимость → уменьшить до вместимости
+        if (min441 > vmesimost && vmesimost > 0 && min441 > 0) {
+            suggestion.field = 'min 441 ПМ';
+            suggestion.current = `${min441} шт`;
+            suggestion.recommended = `${Math.floor(vmesimost)} шт`;
+            suggestion.reason = `MIN 441 (${min441}) > вместимости (${vmesimost})`;
+            suggestions.push({ ...suggestion });
+        }
+        
+        // 2. Новинка без MIN 401 → добавить MIN 401 (50% от вместимости)
+        if (isNew && min401 === 0) {
+            const newSuggestion = {
+                store,
+                article,
+                name: row["Наименование"] || '',
+                field: 'min 401 NEW',
+                current: '0 шт',
+                recommended: vmesimost > 0 ? `${Math.ceil(vmesimost * 0.5)} шт` : '50 шт',
+                reason: 'Новинка без MIN 401'
+            };
+            suggestions.push(newSuggestion);
+        }
+        
+        // 3. Запас > Вместимость → предложить уменьшить до 80% вместимости
+        if (zapasSht > vmesimost && vmesimost > 0) {
+            const newSuggestion = {
+                store,
+                article,
+                name: row["Наименование"] || '',
+                field: 'Запас, шт.',
+                current: `${zapasSht} шт`,
+                recommended: `${Math.floor(vmesimost * 0.8)} шт`,
+                reason: `Запас (${zapasSht}) > вместимости (${vmesimost})`
+            };
+            suggestions.push(newSuggestion);
+        }
+    }
+    
+    if (suggestions.length === 0) {
+        showToast('✅ Все ошибки можно исправить вручную', 'info');
+        return;
+    }
+    
+    showSuggestionsModal(suggestions);
+}
+
+function showSuggestionsModal(suggestions) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay show';
+    modal.id = 'suggestionsModal';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:900px; padding:25px 30px;">
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+            
+            <h2 style="color:#FF8C00; font-size:1.4rem; margin-bottom:4px;">
+                💡 Предложенные исправления
+            </h2>
+            <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:15px; border-bottom:2px solid var(--border-color); padding-bottom:10px;">
+                Найдено ${suggestions.length} ошибок, требующих исправления
+            </div>
+            
+            <div style="overflow-x:auto; max-height:400px; overflow-y:auto;">
+                <table class="top-table" style="font-size:0.6rem; width:100%;">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Магазин</th>
+                            <th>Артикул</th>
+                            <th>Поле</th>
+                            <th>Текущее</th>
+                            <th>Рекомендуется</th>
+                            <th>Причина</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suggestionsBody">
+                        ${suggestions.map((s, idx) => `
+                            <tr id="suggestion-row-${idx}" style="border-bottom:1px solid var(--border-color);">
+                                <td class="rank">${idx + 1}</td>
+                                <td>${s.store}</td>
+                                <td><strong onclick="openProductInMagPortal('${s.article}')" style="cursor:pointer;color:#FF8C00;">${s.article}</strong></td>
+                                <td>${s.field}</td>
+                                <td style="color:#e53935;font-weight:600;">${s.current}</td>
+                                <td style="color:#2c5f2d;font-weight:600;">${s.recommended}</td>
+                                <td style="font-size:0.5rem;color:var(--text-muted);">${s.reason}</td>
+                                <td>
+                                    <button class="btn-apply-fix" data-idx="${idx}" style="background:#2c5f2d;color:white;border:none;border-radius:12px;padding:2px 10px;font-size:0.5rem;cursor:pointer;font-weight:600;">
+                                        ✅ Принять
+                                    </button>
+                                    <button class="btn-reject-fix" data-idx="${idx}" style="background:#e53935;color:white;border:none;border-radius:12px;padding:2px 10px;font-size:0.5rem;cursor:pointer;font-weight:600;">
+                                        ❌
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:15px; padding-top:12px; border-top:2px solid var(--border-color); flex-wrap:wrap;">
+                <button id="applyAllFixesBtn" style="background:#2c5f2d;color:white;border:none;border-radius:30px;padding:8px 24px;font-weight:bold;cursor:pointer;">
+                    ✅ Применить все
+                </button>
+                <button id="exportSuggestionsBtn" style="background:#FF8C00;color:#1e1e1e;border:none;border-radius:30px;padding:8px 24px;font-weight:bold;cursor:pointer;">
+                    📤 Выгрузить рекомендации
+                </button>
+                <button onclick="this.closest('.modal-overlay').remove()" style="background:#b0a790;color:#2c2c2c;border:none;border-radius:30px;padding:8px 24px;font-weight:bold;cursor:pointer;">
+                    ✖️ Закрыть
+                </button>
+            </div>
+            
+            <div style="font-size:0.55rem; color:var(--text-muted); margin-top:8px;">
+                💡 Применить → изменения сохранятся в таблице и будут экспортированы при выгрузке MIN Custom
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.querySelectorAll('.btn-apply-fix').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.idx);
+            const suggestion = suggestions[idx];
+            applySingleFix(suggestion);
+            this.textContent = '✅ Принято';
+            this.style.background = '#43a047';
+            this.disabled = true;
+            const rejectBtn = this.parentElement.querySelector('.btn-reject-fix');
+            if (rejectBtn) rejectBtn.style.display = 'none';
+            showToast(`✅ Применено исправление для ${suggestion.article}`, 'success', 1500);
+        });
+    });
+    
+    document.querySelectorAll('.btn-reject-fix').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.idx);
+            const row = document.getElementById(`suggestion-row-${idx}`);
+            if (row) {
+                row.style.opacity = '0.4';
+                row.style.textDecoration = 'line-through';
+            }
+            this.textContent = '❌ Отклонено';
+            this.style.background = '#999';
+            this.disabled = true;
+            const acceptBtn = this.parentElement.querySelector('.btn-apply-fix');
+            if (acceptBtn) acceptBtn.style.display = 'none';
+        });
+    });
+    
+    document.getElementById('applyAllFixesBtn').addEventListener('click', function() {
+        let applied = 0;
+        document.querySelectorAll('.btn-apply-fix:not(:disabled)').forEach(btn => {
+            const idx = parseInt(btn.dataset.idx);
+            applySingleFix(suggestions[idx]);
+            btn.textContent = '✅ Принято';
+            btn.style.background = '#43a047';
+            btn.disabled = true;
+            const rejectBtn = btn.parentElement.querySelector('.btn-reject-fix');
+            if (rejectBtn) rejectBtn.style.display = 'none';
+            applied++;
+        });
+        showToast(`✅ Применено ${applied} исправлений`, 'success', 2000);
+        renderFullTableWithFilter();
+        scanAlerts();
+        setTimeout(() => {
+            document.getElementById('suggestionsModal')?.remove();
+        }, 1500);
+    });
+    
+    document.getElementById('exportSuggestionsBtn').addEventListener('click', function() {
+        exportSuggestions(suggestions);
+    });
+}
+
+function applySingleFix(suggestion) {
+    const key = `${suggestion.store}|${suggestion.article}`;
+    
+    if (!editedRows.has(key)) {
+        editedRows.set(key, { видМинимума: "", колВоПроектов: "" });
+    }
+    
+    const edited = editedRows.get(key);
+    const oldValue = edited.видМинимума || "";
+    
+    let newValue = '';
+    if (suggestion.field === 'min 441 ПМ') {
+        newValue = '441';
+    } else if (suggestion.field === 'min 401 NEW') {
+        newValue = '401';
+    } else {
+        showToast(`ℹ️ Для ${suggestion.article} рекомендовано уменьшить запас до ${suggestion.recommended}`, 'info', 3000);
+        return;
+    }
+    
+    edited.видМинимума = newValue;
+    pushHistory(key, 'видМинимума', oldValue, newValue);
+    renderFullTableWithFilter();
+    saveState();
+}
+
+function exportSuggestions(suggestions) {
+    if (suggestions.length === 0) {
+        showToast('Нет рекомендаций для экспорта', 'warning');
+        return;
+    }
+    
+    const workbook = XLSX.utils.book_new();
+    const wsData = [
+        ["#", "Магазин", "Артикул", "Наименование", "Поле", "Текущее", "Рекомендуется", "Причина"]
+    ];
+    
+    suggestions.forEach((s, idx) => {
+        wsData.push([
+            idx + 1,
+            s.store,
+            s.article,
+            s.name,
+            s.field,
+            s.current,
+            s.recommended,
+            s.reason
+        ]);
+    });
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(workbook, ws, "Рекомендации");
+    
+    ws['!cols'] = [
+        { wch: 5 }, { wch: 12 }, { wch: 15 }, { wch: 35 },
+        { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 50 }
+    ];
+    
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    link.download = `рекомендации_по_исправлению_ошибок_${dateStr}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast(`✅ Выгружено ${suggestions.length} рекомендаций`, 'success');
+}
+
+function initAlertCardHandlers() {
+    const cards = [
+        { id: 'alertOverstock', type: 'overstock', label: 'Перезапас' },
+        { id: 'alertDeficit', type: 'deficit', label: 'Дефицит' },
+        { id: 'alertErrors', type: 'errors', label: 'Ошибки' },
+        { id: 'alertCritical', type: 'critical', label: 'Критические' }
+    ];
+    
+    cards.forEach(({ id, type, label }) => {
+        const card = document.getElementById(id);
+        if (card) {
+            card.style.cursor = 'pointer';
+            card.title = `📤 Выгрузить все "${label}"`;
+            card.addEventListener('click', () => {
+                if (type === 'critical') {
+                    exportAlertArticles('deficit');
+                } else {
+                    exportAlertArticles(type);
+                }
+            });
+        }
+    });
 }
 
 // ==================== Инициализация ====================
@@ -3893,12 +5021,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('alertToggleBtn').style.background = 'rgba(255,255,255,0.3)';
     }
     
-    // ===== Инструкция =====
     document.getElementById('helpToggleBtn').addEventListener('click', () => toggleHelpModal(true));
     document.getElementById('helpModalClose').addEventListener('click', () => toggleHelpModal(false));
     document.getElementById('helpModal').addEventListener('click', function(e) {
         if (e.target === this) toggleHelpModal(false);
     });
+    
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') toggleHelpModal(false);
         if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -3915,6 +5043,11 @@ document.addEventListener('DOMContentLoaded', function() {
             switchTab('table');
             showToast('📋 Переключено на вкладку "Таблица"', 'info');
         }
+        if (e.key === 'F3') {
+            e.preventDefault();
+            switchTab('alerts');
+            showToast('🚨 Переключено на вкладку "Аномалии"', 'info');
+        }
         if (e.key === 'F5' && !e.ctrlKey) {
             e.preventDefault();
             if (cachedData.fullData.length) {
@@ -3922,7 +5055,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('🔄 Аналитика обновлена', 'info');
             }
         }
-        // ===== Горячая клавиша Enter для открытия в MagPortal =====
         if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
             const hoveredRow = document.querySelector('.full-table tbody tr:hover');
             if (hoveredRow) {
@@ -4049,12 +5181,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    document.getElementById('scanAlertsBtn').addEventListener('click', scanAlerts);
+    document.getElementById('exportAllAlertsBtn').addEventListener('click', exportAllAlerts);
+    document.getElementById('suggestFixesBtn').addEventListener('click', suggestFixes);
+    document.querySelectorAll('.error-filter').forEach(cb => {
+        cb.addEventListener('change', applyErrorFilters);
+    });
+    document.getElementById('clearErrorFiltersBtn').addEventListener('click', clearErrorFilters);
+    initAlertCardHandlers();
+    
     window.exportArticles = exportArticles;
     window.exportTopItems = exportTopItems;
     window.exportAllItems = exportAllItems;
     window.toggleAlerts = toggleAlerts;
     window.exportCardData = exportCardData;
     window.openProductInMagPortal = openProductInMagPortal;
+    window.exportAlertArticles = exportAlertArticles;
+    window.exportSingleAlert = exportSingleAlert;
+    window.restoreFilters = restoreFilters;
     
     if (appState.leftPanelCollapsed) {
         leftPanel.classList.add('collapsed');
@@ -4081,7 +5225,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📌 STOCKWISE готов!');
     console.log('📊 Умный анализ запасов');
     console.log('🏪 Двойной клик или Enter → MagPortal');
-    console.log('⌨️ F1 - Аналитика, F2 - Таблица, F5 - Обновить');
+    console.log('🚨 Вкладка "Аномалии" — сканирование ошибок');
+    console.log('🔍 При поиске по артикулу фильтры автоматически сбрасываются');
+    console.log('⌨️ F1 - Аналитика, F2 - Таблица, F3 - Аномалии, F5 - Обновить');
     console.log('❓ Кнопка "Инструкция" для быстрого ознакомления');
 });
 </script>
